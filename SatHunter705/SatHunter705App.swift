@@ -11,7 +11,7 @@ import SwiftUI
 struct SatHunter705App: App {
     var body: some Scene {
         WindowGroup {
-            TrackingView()
+            SatListView()
         }
     }
 }

@@ -35,6 +35,8 @@
 		D1A738B62A242398002832A1 /* LibPredict.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738852A230F81002832A1 /* LibPredict.swift */; };
 		D1A738B72A242434002832A1 /* libpredict.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D1403E342A2303ED000E873B /* libpredict.framework */; };
 		D1A738B82A242434002832A1 /* libpredict.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D1403E342A2303ED000E873B /* libpredict.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D1A738BE2A250C06002832A1 /* SatListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738BD2A250C06002832A1 /* SatListView.swift */; };
+		D1A738C02A250CA4002832A1 /* TleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738BF2A250CA4002832A1 /* TleManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -134,6 +136,9 @@
 		D1A738A52A24235D002832A1 /* SatHunter705UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SatHunter705UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1A738A92A24235D002832A1 /* SatHunter705UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatHunter705UITests.swift; sourceTree = "<group>"; };
 		D1A738AB2A24235D002832A1 /* SatHunter705UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatHunter705UITestsLaunchTests.swift; sourceTree = "<group>"; };
+		D1A738BC2A2475AD002832A1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D1A738BD2A250C06002832A1 /* SatListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatListView.swift; sourceTree = "<group>"; };
+		D1A738BF2A250CA4002832A1 /* TleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TleManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -252,11 +257,14 @@
 		D1A7388D2A24235B002832A1 /* SatHunter705 */ = {
 			isa = PBXGroup;
 			children = (
+				D1A738BC2A2475AD002832A1 /* Info.plist */,
 				D1A738852A230F81002832A1 /* LibPredict.swift */,
 				D1A7388E2A24235B002832A1 /* SatHunter705App.swift */,
 				D1A738902A24235B002832A1 /* TrackingView.swift */,
 				D1A738922A24235D002832A1 /* Assets.xcassets */,
 				D1A738942A24235D002832A1 /* Preview Content */,
+				D1A738BD2A250C06002832A1 /* SatListView.swift */,
+				D1A738BF2A250CA4002832A1 /* TleManager.swift */,
 			);
 			path = SatHunter705;
 			sourceTree = "<group>";
@@ -511,8 +519,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				D1A738912A24235B002832A1 /* TrackingView.swift in Sources */,
+				D1A738C02A250CA4002832A1 /* TleManager.swift in Sources */,
 				D1A738B62A242398002832A1 /* LibPredict.swift in Sources */,
 				D1A7388F2A24235B002832A1 /* SatHunter705App.swift in Sources */,
+				D1A738BE2A250C06002832A1 /* SatListView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -949,8 +959,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SatHunter705/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SatHunter705;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to calculate satellite passes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -1033,8 +1045,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SatHunter705/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SatHunter705;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to calculate satellite passes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

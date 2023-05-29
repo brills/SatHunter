@@ -43,9 +43,10 @@ public class SatObserver {
   private var ptrInternal: UnsafeMutablePointer<predict_observer_t>
 }
 
-public func downloadAmsatTleFile() -> Result<String, Error> {
+public let kDefaultTleUrl = URL(string: "https://www.amsat.org/tle/current/dailytle.txt")!
+public func downloadAmsatTleFile(_ url: URL? = nil) -> Result<String, Error> {
   do {
-    let contents = try String(contentsOf: URL(string: "https://www.amsat.org/tle/current/dailytle.txt")!)
+    let contents = try String(contentsOf: url ?? kDefaultTleUrl)
     return .success(contents)
   } catch {
     return .failure(error)

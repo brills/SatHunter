@@ -64,19 +64,21 @@ class SatViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
     if let location = locations.last {
       userAlt = location.altitude
-      userLon = location.coordinate.latitude
-      userLat = location.coordinate.longitude
+      userLon = location.coordinate.longitude
+      userLat = location.coordinate.latitude
       observer = SatObserver(name: "user", lat: userLat, lon: userLon, alt: userAlt)
     }
   }
-  
+
   func refresh() {
     if let trackedSat = trackedSat {
-    if case .success(let observation) = getSatObservation(observer: observer, orbit: trackedSat) {
-      if observation.elevation > 0 {
-        currentAz = observation.azimuth.deg
-        currentEl = observation.elevation.deg
-        let los = getSatNextLos(observer: observer, orbit: trackedSat)
+      if case let .success(observation) = getSatObservation(observer: observer,
+                                                            orbit: trackedSat)
+      {
+        if observation.elevation > 0 {
+          currentAz = observation.azimuth.deg
+          currentEl = observation.elevation.deg
+          let los = getSatNextLos(observer: observer, orbit: trackedSat)
           currentLos = los.date
         } else {
           let nextPass = getNextSatPass(observer: observer, orbit: trackedSat)
@@ -91,7 +93,7 @@ class SatViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
 }
 // az, el in degree
 func azElToXy(az: Double, el: Double) -> (Double, Double) {
-  var r = el / 90
+  var r = 1 - el / 90
   r = max(0, r)
   r = min(1, r)
   return (r * sin(az.rad), r * cos(az.rad))
@@ -108,6 +110,7 @@ struct SatView: View {
         let width = g.size.width
         let height = g.size.height
         ZStack {
+          // The background of the sky view
           Circle().stroke()
           Circle().scale(0.667).stroke()
           Circle().scale(0.333).stroke()
@@ -121,13 +124,17 @@ struct SatView: View {
             path.move(to: .init(x: 0, y: height / 2))
             path.addLine(to: .init(x: width, y: height / 2))
           }.stroke()
+          
+          // Red dot in the sky view for the currently tracked sat.
           if let visible = model.visible {
             if visible {
               Path {
                 path in
                 let (x, y) = azElToXy(az: model.currentAz!,
                                       el: model.currentEl!)
-                let center = CGPoint(x: width / 2 + x, y: height / 2 + y)
+                let r = min(width, height) / 2
+                // the Y origin is top-left corner, thus the minus sign before y * r.
+                let center = CGPoint(x: width / 2 + x * r, y: height / 2 - y * r)
                 path.move(to: center)
                 path.addArc(
                   center: center,
@@ -139,6 +146,16 @@ struct SatView: View {
               }.fill(.red)
             }
           }
+          
+          Path {
+            path in
+            path.move(to: .init(x: width / 2, y: height / 2))
+            let r = min(width, height) / 2
+            let heading = model.userHeading.rad
+            let x = width / 2 + r * sin(heading)
+            let y = height / 2 - r * cos(heading)
+            path.addLine(to: .init(x: x, y: y))
+          }.stroke(.blue.opacity(0.4), lineWidth: 5)
         }
       }
       
@@ -193,7 +210,6 @@ struct SatView: View {
         }
       }.frame(maxWidth: .infinity).font(.body.monospaced())
     }
-    
   }
 }
 struct TrackingView: View {
@@ -203,7 +219,6 @@ struct TrackingView: View {
         satName: .constant("SO-50"),
         trackedSat: .constant(getTrackedSatForTesting())
       )
-      Text("Hello, world")
     }
     .padding()
   }
@@ -230,5 +245,5 @@ fileprivate func getTrackedSatForTesting() -> SatOrbitElements? {
     return nil
   }
   
-  return SatOrbitElements(tleDict["AO-91"]!)
+  return SatOrbitElements(tleDict["AO-07"]!)
 }
