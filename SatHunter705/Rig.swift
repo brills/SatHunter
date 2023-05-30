@@ -31,6 +31,17 @@ public enum Mode {
       return 0x01
     }
   }
+  
+  func inverted() -> Mode {
+    switch self {
+    case .FM:
+      return .FM
+    case .LSB:
+      return .USB
+    case .USB:
+      return .LSB
+    }
+  }
 }
 
 public protocol Rig {
@@ -284,7 +295,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
     }
   }
 
-  private var ic705: CBPeripheral?
+  var ic705: CBPeripheral?
   private var state: State
   private var waitForStartSema: DispatchSemaphore?
   private var ctlChar: CBCharacteristic?
@@ -321,6 +332,12 @@ public class MyIc705: Rig {
     btDelegate = Ic705BtDelegate()
     btMgr = CBCentralManager(delegate: btDelegate, queue: .global())
     btDelegate?.waitForStart()
+  }
+  
+  public func disconnect() {
+    if let p = btDelegate?.ic705 {
+      btMgr?.cancelPeripheralConnection(p)
+    }
   }
 
   public func getVfoAFreq() -> Result<Int, Error> {

@@ -99,19 +99,89 @@ class DopplerShiftModel: NSObject, ObservableObject, CLLocationManagerDelegate {
   }
 }
 
+class RadioModel : ObservableObject {
+  @Published var isConnected: Bool = false
+  @Published var vfoAFreq: Int = 0
+  @Published var vfoBFreq: Int = 0
+  var mode: Mode = .LSB {
+    didSet {
+      configRig()
+    }
+  }
+  var inverted: Bool = false {
+    didSet {
+      configRig()
+    }
+  }
+  var dopplerShiftModel: DopplerShiftModel?
+  private var rig: MyIc705
+  private var timer: Timer?
+  
+  init() {
+    self.rig = MyIc705()
+  }
+  
+  func connect() {
+    rig.connect()
+    self.isConnected = true
+  }
+  
+  func disconnect() {
+    rig.disconnect()
+    self.isConnected = false
+  }
+  
+  func startTracking() {
+    if timer != nil {
+      timer!.invalidate()
+    }
+    configRig()
+    timer = Timer.scheduledTimer(
+      withTimeInterval: 1,
+      repeats: true,
+      block: { _ in self.syncFreq() }
+    )
+  }
+  
+  func configRig() {
+    if !isConnected {
+      return
+    }
+    rig.enableSplit()
+    rig.setVfoAMode(mode)
+    rig.setVfoBMode(inverted ? mode.inverted() : mode)
+  }
+  
+  func stopTracking() {
+    if let timer = timer {
+      timer.invalidate()
+    }
+    timer = nil
+  }
+  
+  private func syncFreq() {
+    if let m = dopplerShiftModel {
+      if let freq = m.actualDownlinkFreq {
+        rig.setVfoAFreq(freq)
+      }
+      if let freq = m.actualUplinkFreq {
+        rig.setVfoBFreq(freq)
+      }
+    }
+  }
+}
+
 struct RigControlView: View {
   @Binding var trackedSatTle: (String, String)?
   @State private var downlinkFreqStr = "144.000"
   @State private var uplinkFreqStr = "440.000"
-  @State private var selectedModeIdx = 0
-  @State private var selectedMode = ""
+  @State private var selectedMode: Mode = .LSB
   @State private var isInverted: Bool = false
-  @State private var radioConnected: Bool = false
-  @State private var radioIsTracking: Bool = false
   @FocusState private var uplinkFreqInFocus: Bool
   @FocusState private var downlinkFreqInFocus: Bool
-  private let modes = ["LSB", "USB", "FM"]
   @ObservedObject var dopplerShiftModel = DopplerShiftModel()
+  @ObservedObject var radioModel = RadioModel()
+  @State private var radioIsTracking: Bool = false
 
   var body: some View {
     VStack {
@@ -161,15 +231,26 @@ struct RigControlView: View {
       }.font(.body.monospaced())
       HStack {
         Text("Mode")
-        Picker(selection: $selectedModeIdx, label: Text("Mode")) {
-          ForEach(0 ..< 3) {
-            Text(modes[$0])
-          }
-        }.pickerStyle(.segmented)
+        Picker(selection: $selectedMode, label: Text("Mode")) {
+          Text("LSB").tag(Mode.LSB)
+          Text("USB").tag(Mode.USB)
+          Text("FM").tag(Mode.FM)
+        }
+        .pickerStyle(.segmented)
+        .onChange(of: selectedMode) {
+          _ in
+          radioModel.mode = selectedMode
+        }
         Divider()
         Toggle(isOn: $isInverted) {
           Text("Inverted")
-        }.toggleStyle(.button).disabled(selectedModeIdx == 2)
+        }
+        .toggleStyle(.button)
+        .disabled(selectedMode == .FM)
+        .onChange(of: isInverted) {
+          _ in
+          radioModel.inverted = isInverted
+        }
       }
       HStack {
         Spacer()
@@ -177,20 +258,40 @@ struct RigControlView: View {
       Divider()
       HStack {
         Text("Radio")
-        Toggle(isOn: $radioConnected) {
-          Text("Connected")
-        }.toggleStyle(.button)
+        Button(radioModel.isConnected ? "Connected" : "Connect") {
+          if !radioModel.isConnected {
+            radioModel.connect()
+          }
+        }
         Toggle(isOn: $radioIsTracking) {
           Text("Tracking")
-        }.toggleStyle(.button)
-          .disabled(!radioConnected || trackedSatTle == nil)
+        }
+        .toggleStyle(.button)
+        .disabled(!radioModel.isConnected || trackedSatTle == nil)
+        .onChange(of: radioIsTracking) {
+          newValue in
+          if newValue {
+            radioModel.startTracking()
+          } else {
+            radioModel.stopTracking()
+          }
+        }
         Spacer()
       }
-    }.buttonStyle(.bordered).onAppear {
+    }
+    .buttonStyle(.bordered)
+    .fixedSize(horizontal: false, vertical: true)
+    .onAppear {
       dopplerShiftModel.trackedSatTle = trackedSatTle
+      radioModel.dopplerShiftModel = dopplerShiftModel
+      radioModel.mode = selectedMode
+      radioModel.inverted = isInverted
       setDownlinkFreq()
       setUplinkFreq()
-    }.fixedSize(horizontal: false, vertical: true)
+    }
+    .onDisappear {
+      radioModel.disconnect()
+    }
   }
 
   private func getActualDownlinkFreq() -> String {
