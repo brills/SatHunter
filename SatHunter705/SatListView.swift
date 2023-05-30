@@ -114,11 +114,13 @@ struct SatListView : View {
       List(items) {
         sat in
         VStack {
-          HStack {
-            Text(sat.name)
-            Spacer()
-            if sat.visible {
-              Text("Passing").foregroundColor(.mint)
+          NavigationLink(destination: { TrackingView(satName: sat.name, trackedSatTle: sat.tle) }) {
+            HStack {
+              Text(sat.name)
+              Spacer()
+              if sat.visible {
+                Text("Passing").foregroundColor(.mint)
+              }
             }
           }
           if sat.visible {

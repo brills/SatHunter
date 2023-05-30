@@ -11,6 +11,7 @@ import Foundation
 
 public class SatOrbitElements {
   init(_ tle: (String, String)) {
+    self.tle = tle
     ptrInternal = predict_parse_tle(tle.0, tle.1)
   }
   deinit {
@@ -23,6 +24,7 @@ public class SatOrbitElements {
       ptrInternal
     }
   }
+  var tle: (String, String)
 }
 
 public class SatObserver {
