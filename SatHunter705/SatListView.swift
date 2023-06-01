@@ -10,7 +10,7 @@ import CoreLocation
 import SwiftUI
 
 struct SatListItem: Identifiable, Sendable {
-  var name: String
+  var satellite: Satellite
   var visible: Bool
   // visible == true
   var los: Date?
@@ -20,12 +20,16 @@ struct SatListItem: Identifiable, Sendable {
   var nextLos: Date?
   var maxEl: Double?
   
-  var tle: (String, String)
-  
-  var id: String {
+  var id: Int {
     get {
-      name
+      Int(satellite.noradID)
     }
+  }
+}
+
+extension Satellite {
+  var tleTuple: (String, String) {
+    (self.tle.line1, self.tle.line2)
   }
 }
 
@@ -60,13 +64,12 @@ class SatListStore: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     var result: [SatListItem] = []
     for sat in satInfoManager!.satellites.values {
-      let tle = (sat.tle.line1, sat.tle.line2)
+      let tle = sat.tleTuple
       let orbit = SatOrbitElements(tle)
       let satName = sat.name
       if case .success(let observation) = getSatObservation(observer: observer, orbit: orbit) {
         let visible = observation.elevation > 0
-        var item = SatListItem(name: satName, visible: visible, tle: tle)
-        item.name = satName
+        var item = SatListItem(satellite: sat, visible: visible)
         if observation.elevation > 0 {
           item.los = getSatNextLos(observer: observer, orbit: orbit).date
         } else {
@@ -109,45 +112,45 @@ struct SatListView : View {
       return store.sats
     }
     return store.sats.filter {
-      return $0.name.range(of:searchText, options: .caseInsensitive) != nil
+      return $0.satellite.name.range(of:searchText, options: .caseInsensitive) != nil
     }
   }
   
   var body: some View {
     NavigationView {
       List(items) {
-        sat in
+        item in
         VStack {
-          NavigationLink(destination: { TrackingView(satName: sat.name, trackedSatTle: sat.tle) }) {
+          NavigationLink(destination: { TrackingView(satellite: item.satellite) }) {
             HStack {
-              Text(sat.name)
+              Text(item.satellite.name)
               Spacer()
-              if sat.visible {
+              if item.visible {
                 Text("Passing").foregroundColor(.mint)
               }
             }
           }
-          if sat.visible {
+          if item.visible {
             HStack {
               Text("LOS:")
-              Text("\(sat.los!.formatted(date: .omitted, time: .shortened))")
+              Text("\(item.los!.formatted(date: .omitted, time: .shortened))")
               Spacer()
             }.font(.footnote)
           } else {
             VStack {
               HStack {
                 Text("AOS:")
-                Text(sat.nextAos!.formatted(date: .omitted, time: .shortened))
+                Text(item.nextAos!.formatted(date: .omitted, time: .shortened))
                 Spacer()
               }
               HStack {
                 Text("LOS:")
-                Text(sat.nextLos!.formatted(date: .omitted, time: .shortened))
+                Text(item.nextLos!.formatted(date: .omitted, time: .shortened))
                 Spacer()
               }
               HStack {
                 Text("Max El:")
-                Text(String(format: "%.0f", sat.maxEl!))
+                Text(String(format: "%.0f", item.maxEl!))
                 Spacer()
               }
             }.font(.footnote)

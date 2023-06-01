@@ -8,14 +8,13 @@
 import SwiftUI
 
 struct TrackingView: View {
-  @State var satName: String
-  @State var trackedSatTle: (String, String)
+  @State var satellite: Satellite
   var body: some View {
     VStack {
-      RigControlView(trackedSatTle: Binding($trackedSatTle))
+      RigControlView(trackedSatTle: .constant(satellite.tleTuple))
       SatView(
-        satName: .constant(satName),
-        trackedSat: .constant(SatOrbitElements(trackedSatTle))
+        satName: .constant(satellite.name),
+        trackedSat: .constant(SatOrbitElements(satellite.tleTuple))
       ).ignoresSafeArea(.keyboard)
     }
   }
