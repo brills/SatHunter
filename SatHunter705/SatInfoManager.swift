@@ -117,6 +117,9 @@ class SatInfoManager {
       if let uplinkHigh = transponder["uplink_low"] as? Int {
         proto.uplinkFreqUpper = Int64(uplinkHigh)
       }
+      if let desc = transponder["description"] as? String {
+        proto.description_p = desc
+      }
       if var l = result[noradId] {
         l.append(proto)
       } else {

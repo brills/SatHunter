@@ -103,8 +103,9 @@ func azElToXy(az: Double, el: Double) -> (Double, Double) {
 }
 
 struct SatView: View {
-  @Binding var satName: String?
-  @Binding var trackedSat: SatOrbitElements?
+//  @Binding var satName: String?
+//  @Binding var trackedSat: SatOrbitElements?
+  @Binding var trackedSat: Satellite?
   @ObservedObject var model = SatViewModel()
   
   var body: some View {
@@ -163,9 +164,11 @@ struct SatView: View {
       }
       
       VStack {
-        if let satName = satName {
+        if let satName = trackedSat?.name {
           Text(satName).font(.title).onAppear {
-            model.trackedSat = self.trackedSat
+            if let tle = trackedSat?.tleTuple {
+              model.trackedSat = SatOrbitElements(tle)
+            }
           }
           if let visible = model.visible {
             if visible {
@@ -214,18 +217,4 @@ struct SatView: View {
       }.frame(maxWidth: .infinity).font(.body.monospaced())
     }
   }
-}
-
-
-struct SatView_Previews: PreviewProvider {
-    static var previews: some View {
-      SatView(
-        satName: .constant("SO-50"),
-        trackedSat: .constant(SatOrbitElements((
-          "1 43017U 17073E   23148.65820382  .00005218  00000-0  36602-3 0  9991",
-          "2 43017  97.6335  33.7713 0235411 133.4974 228.6079 14.85813046298284"
-        )))
-      )
-
-    }
 }

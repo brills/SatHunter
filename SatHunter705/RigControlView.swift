@@ -194,7 +194,7 @@ class RadioModel : ObservableObject {
 }
 
 struct RigControlView: View {
-  @Binding var trackedSatTle: (String, String)?
+  @Binding var trackedSat: Satellite?
   @State private var downlinkFreqStr = "144.000"
   @State private var uplinkFreqStr = "440.000"
   @State private var selectedMode: Mode = .LSB
@@ -204,9 +204,18 @@ struct RigControlView: View {
   @ObservedObject var dopplerShiftModel = DopplerShiftModel()
   @ObservedObject var radioModel = RadioModel()
   @State private var radioIsTracking: Bool = false
+  @State private var transponderIdx: Int = 0
 
   var body: some View {
     VStack {
+      ZStack {
+        Rectangle().fill(.blue).opacity(0.3)
+        HStack {
+          Spacer()
+          Text("Satellite")
+          Spacer()
+        }
+      }
       HStack {
         Image(systemName: "arrow.down")
         TextField("MHz", text: $downlinkFreqStr).keyboardType(.numbersAndPunctuation)
@@ -223,10 +232,7 @@ struct RigControlView: View {
           }
           .frame(maxHeight: .infinity)
         Divider()
-        Image(systemName: "dot.radiowaves.forward").rotation3DEffect(
-          .degrees(180),
-          axis: (x: 1, y: 0, z: 0)
-        )
+        Image(systemName: "dot.radiowaves.forward")
         Text(getActualDownlinkFreq())
           .frame(maxHeight: .infinity)
       }.font(.body.monospaced())
@@ -251,8 +257,32 @@ struct RigControlView: View {
         Text(getActualUplinkFreq())
           .frame(maxHeight: .infinity)
       }.font(.body.monospaced())
+            HStack {
+        Image(systemName: "antenna.radiowaves.left.and.right")
+        if trackedSat == nil {
+          Text("No transponder info available")
+        } else {
+          Picker("Transponder", selection: $transponderIdx) {
+            ForEach(trackedSat!.transponders.indices, id: \.self) {
+              i in
+              Text(trackedSat!.transponders[i].description_p)
+            }
+          }
+          Button("Set") {
+            
+          }
+        }
+        Spacer()
+      }
+      ZStack {
+        Rectangle().fill(.blue).opacity(0.3)
+        HStack {
+          Spacer()
+          Text("Radio")
+          Spacer()
+        }
+      }
       HStack {
-        Text("Mode")
         Picker(selection: $selectedMode, label: Text("Mode")) {
           Text("LSB").tag(Mode.LSB)
           Text("USB").tag(Mode.USB)
@@ -275,41 +305,51 @@ struct RigControlView: View {
         }
       }
       HStack {
-        Spacer()
-      }.buttonStyle(.borderedProminent)
-      Divider()
-      HStack {
-        Text("Radio")
-        Button(radioModel.connectionState.description) {
-          switch radioModel.connectionState {
-          case .NotConnected:
-            radioModel.connect()
-          case .Connected:
-            fallthrough
-          case .Connecting:
-            radioModel.disconnect()
+        HStack {
+          Button(radioModel.connectionState.description) {
+            switch radioModel.connectionState {
+            case .NotConnected:
+              radioModel.connect()
+            case .Connected:
+              fallthrough
+            case .Connecting:
+              radioModel.disconnect()
+            }
           }
-        }
-        Toggle(isOn: $radioIsTracking) {
-          Text(radioIsTracking ? "Tracking": "Track")
-        }
-        .toggleStyle(.button)
-        .disabled(radioModel.connectionState != .Connected || trackedSatTle == nil)
-        .onChange(of: radioIsTracking) {
-          newValue in
-          if newValue {
-            radioModel.startTracking()
-          } else {
-            radioModel.stopTracking()
+          Toggle(isOn: $radioIsTracking) {
+            Text(radioIsTracking ? "Tracking": "Track")
+          }
+          .toggleStyle(.button)
+          .disabled(radioModel.connectionState != .Connected || trackedSat == nil)
+          .onChange(of: radioIsTracking) {
+            newValue in
+            if newValue {
+              radioModel.startTracking()
+            } else {
+              radioModel.stopTracking()
+            }
           }
         }
         Spacer()
+        HStack {
+          Image(systemName: "arrow.down")
+          Text(getVfoAFreq())
+            .frame(maxHeight: .infinity)
+          Spacer()
+          Divider()
+          Image(systemName: "arrow.up")
+          Text(getVfoBFreq())
+            .frame(maxHeight: .infinity)
+          Spacer()
+        }
+        .fixedSize(horizontal: true, vertical: false)
+        .font(.body.monospaced())
       }
     }
     .buttonStyle(.bordered)
     .fixedSize(horizontal: false, vertical: true)
     .onAppear {
-      dopplerShiftModel.trackedSatTle = trackedSatTle
+      dopplerShiftModel.trackedSatTle = trackedSat?.tleTuple
       radioModel.dopplerShiftModel = dopplerShiftModel
       radioModel.mode = selectedMode
       radioModel.inverted = isInverted
@@ -321,6 +361,18 @@ struct RigControlView: View {
     }
   }
 
+  private func getVfoAFreq() -> String {
+    if radioModel.vfoAFreq > 0 {
+      return String(format: "%07.03f", Double(radioModel.vfoAFreq) / 1e6)
+    }
+    return "N/A"
+  }
+  private func getVfoBFreq() -> String {
+    if radioModel.vfoBFreq > 0 {
+      return String(format: "%07.03f", Double(radioModel.vfoBFreq) / 1e6)
+    }
+    return "N/A"
+  }
   private func getActualDownlinkFreq() -> String {
     if let f = dopplerShiftModel.actualDownlinkFreq {
       return String(format: "%010.06f", Double(f) / 1e6)
@@ -351,10 +403,4 @@ struct RigControlView: View {
     }
   }
   
-}
-
-struct RigControlView_Previews: PreviewProvider {
-  static var previews: some View {
-    RigControlView(trackedSatTle: .constant(nil))
-  }
 }
