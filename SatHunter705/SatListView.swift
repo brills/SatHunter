@@ -34,6 +34,7 @@ class SatListStore: NSObject, ObservableObject, CLLocationManagerDelegate {
   @Published var lastLoadedAt: Date? = nil
   private var observer = SatObserver(name: "user", lat: 37.33481435508938, lon:-122.00893980785605, alt: 25)
   private var locationManager: CLLocationManager? = nil
+  private var satInfoManager: SatInfoManager? = nil
   
   override init() {
     super.init()
@@ -54,26 +55,29 @@ class SatListStore: NSObject, ObservableObject, CLLocationManagerDelegate {
   }
   
   func load(searchText: String? = nil) async {
-    if case .success(let tleDict) = TleManager.load() {
-      var result = [SatListItem]()
-      for (satName, tle) in tleDict {
-        let orbit = SatOrbitElements(tle)
-        if case .success(let observation) = getSatObservation(observer: observer, orbit: orbit) {
-          let visible = observation.elevation > 0
-          var item = SatListItem(name: satName, visible: visible, tle: tle)
-          item.name = satName
-          if observation.elevation > 0 {
-            item.los = getSatNextLos(observer: observer, orbit: orbit).date
-          } else {
-            let nextPass = getNextSatPass(observer: observer, orbit: orbit)
-            item.nextAos = nextPass.aos.date
-            item.nextLos = nextPass.los.date
-            item.maxEl = nextPass.maxElevation.elevation.deg
-          }
-          if item.maxEl != nil && item.maxEl! < 0 {
-          } else {
-            result.append(item)
-          }
+    if satInfoManager == nil {
+      satInfoManager = .init()
+    }
+    var result: [SatListItem] = []
+    for sat in satInfoManager!.satellites.values {
+      let tle = (sat.tle.line1, sat.tle.line2)
+      let orbit = SatOrbitElements(tle)
+      let satName = sat.name
+      if case .success(let observation) = getSatObservation(observer: observer, orbit: orbit) {
+        let visible = observation.elevation > 0
+        var item = SatListItem(name: satName, visible: visible, tle: tle)
+        item.name = satName
+        if observation.elevation > 0 {
+          item.los = getSatNextLos(observer: observer, orbit: orbit).date
+        } else {
+          let nextPass = getNextSatPass(observer: observer, orbit: orbit)
+          item.nextAos = nextPass.aos.date
+          item.nextLos = nextPass.los.date
+          item.maxEl = nextPass.maxElevation.elevation.deg
+        }
+        if item.maxEl != nil && item.maxEl! < 0 {
+        } else {
+          result.append(item)
         }
       }
       result.sort {

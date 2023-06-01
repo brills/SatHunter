@@ -7,9 +7,9 @@
 
 import Foundation
 
-class SatInfoManager : ObservableObject {
+class SatInfoManager {
   private let kInfoFileName = "sat_info.pbbin"
-  @Published var satellites: [Int: Satellite] = [:]
+  var satellites: [Int: Satellite] = [:]
   
   init() {
     if !loadLocally() {

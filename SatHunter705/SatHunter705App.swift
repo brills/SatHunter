@@ -9,10 +9,9 @@ import SwiftUI
 
 @main
 struct SatHunter705App: App {
-  @StateObject var satInfoMgr = SatInfoManager()
   var body: some Scene {
     WindowGroup {
-      SatListView().environmentObject(satInfoMgr)
+      SatListView()
     }
   }
 }
