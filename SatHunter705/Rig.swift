@@ -36,23 +36,30 @@ public enum Mode {
     switch self {
     case .FM:
       return .FM
-    case .LSB:
-      return .USB
     case .USB:
       return .LSB
+    case .LSB:
+      return .USB
     }
   }
 }
 
 public protocol Rig {
-  func connect()
-  func getVfoAFreq() -> Result<Int, Error>
-  func getVfoBFreq() -> Result<Int, Error>
+  func connect(completion: @escaping () -> Void)
+  func disconnect()
+  func getVfoAFreq() -> Int
+  func getVfoBFreq() -> Int
   func setVfoAFreq(_ f: Int)
   func setVfoBFreq(_ f: Int)
   func enableSplit()
   func setVfoAMode(_ m: Mode)
   func setVfoBMode(_ m: Mode)
+}
+
+private protocol RigStateObserver {
+  func observe(connected: Bool)
+  func observe(vfoAFreq: Int)
+  func observe(vfoBFreq: Int)
 }
 
 private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
@@ -62,18 +69,11 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
     ic705 = nil
     state = .INIT
     ctlChar = nil
-    waitForStartSema = DispatchSemaphore(value: 0)
-    sendPacketSema = DispatchSemaphore(value: 1)
-    
-    mu = DispatchSemaphore(value: 1)
-    expectedResponse = nil
-    valueNotification = nil
-    waitForValueNotifySema = nil
     super.init()
   }
-
+  
   // CBCentralManagerDelegate methods
-
+  
   func centralManagerDidUpdateState(_ central: CBCentralManager) {
     if central.state == .poweredOn {
       central.scanForPeripherals(withServices: [k705BtleControlService])
@@ -82,7 +82,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
       ic705 = nil
     }
   }
-
+  
   func centralManager(
     _ central: CBCentralManager,
     didDiscover peripheral: CBPeripheral,
@@ -102,14 +102,14 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
       }
     }
   }
-
+  
   func centralManager(_: CBCentralManager,
                       didConnect peripheral: CBPeripheral)
   {
     logger.info("Connected!")
     peripheral.discoverServices([k705BtleControlService])
   }
-
+  
   // CBPeripheralDelegate methods
   func peripheral(
     _ peripheral: CBPeripheral,
@@ -123,13 +123,9 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
     for char in service.characteristics! {
       ctlChar = char
       peripheral.setNotifyValue(true, for: char)
-      logger
-        .info(
-          "Discovered char for service \(service.uuid) \(char.uuid)"
-        )
     }
   }
-
+  
   func peripheral(
     _ peripheral: CBPeripheral,
     didDiscoverServices error: Error?
@@ -145,7 +141,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
       }
     }
   }
-
+  
   func peripheral(
     _ peripheral: CBPeripheral,
     didUpdateNotificationStateFor characteristic: CBCharacteristic,
@@ -170,7 +166,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
     )
     state = .ID_SENT
   }
-
+  
   func peripheral(
     _ peripheral: CBPeripheral,
     didWriteValueFor char: CBCharacteristic,
@@ -210,63 +206,70 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
       state = .TOKEN_SENT
     case .TOKEN_SENT:
       state = .STARTED
-      waitForStartSema?.signal()
-      waitForStartSema = nil
-
+      schedulePolling()
+      rigStateObserver?.observe(connected: true)
     case .STARTED:
       break
     default:
       logger.error("Invalid state")
     }
   }
-
+  
   func peripheral(
     _: CBPeripheral,
     didUpdateValueFor characteristic: CBCharacteristic,
     error: Error?
   ) {
     if characteristic.uuid == k705BtleServiceChar {
-      mu.wait()
-      if let expect = expectedResponse {
-        if error != nil {
-          valueNotification = .failure(RigError.TryAgainError)
-        } else if expect.matches(characteristic.value!) {
-          valueNotification = .success(characteristic.value!)
-        } else {
-          valueNotification = .failure(RigError.MalformedResponseError)
-        }
-        waitForValueNotifySema?.signal()
-        waitForValueNotifySema = nil
-        expectedResponse = nil
+      if error != nil {
+        logger.error("didUpdateValueFor called with error: \(error)")
+        return
       }
-      mu.signal()
+      let resp = characteristic.value!
+      if resp.count < 5 || !resp[0 ... 3]
+        .elementsEqual([0xFE, 0xFE, 0xE0, 0xA4]) || resp.last != 0xFD {
+        // This packet is not addressed to us, or it's malformed. Ignore.
+        return
+      }
+      switch resp[4] {
+        // This is the response to our query of VFO.
+      case 0x25:
+        if resp[5] == 0 {
+          rigStateObserver?.observe(vfoAFreq: fromBCD(resp[6...10]))
+        } else if resp[5] == 1 {
+          rigStateObserver?.observe(vfoBFreq: fromBCD(resp[6...10]))
+        }
+      default:
+        return
+      }
     }
   }
-
   // Public interfaces
-
-  // Blocking. Idompotent.
-  func waitForStart() {
-    if let sem = waitForStartSema {
-      sem.wait()
-    }
+  // non-blocking and there is no response. No guarantee that the packet
+  // will be received.
+  // For state-setting packets, packet loss is not the end of the day.
+  // There may be mismatch with the UI state, but user can retry.
+  // For state-getting packets, since they are periodically sent from here,
+  // losing a packet is not a big deal.
+  func sendPacket(_ data: Data) {
+    ic705!.writeValue(data, for: ctlChar!, type: .withResponse)
   }
 
-  // Blocking.
-  // TODO: timeout
-  func sendPacket(_ data: Data, expect: ExpectedResponse) -> Result<Data, Error> {
-    sendPacketSema.wait()
-    
-    mu.wait()
-    expectedResponse = expect
-    waitForValueNotifySema = DispatchSemaphore(value: 0)
-    mu.signal()
-    
-    ic705!.writeValue(data, for: ctlChar!, type: .withResponse)
-    waitForValueNotifySema!.wait()
-    
-    sendPacketSema.signal()
-    return valueNotification!
+  private func schedulePolling() {
+    DispatchQueue.global(qos: .userInteractive)
+      .asyncAfter(wallDeadline: .now() + .milliseconds(250)) {
+        [weak self] in
+          if let s = self {
+            // Get VFOA freq
+            s.sendPacket(.init(chainBytes(kCivPreamble, [0x25, 0x00, 0xFD])))
+            // Get VFOB freq
+            s.sendPacket(.init(chainBytes(kCivPreamble, [0x25, 0x01, 0xFD])))
+            s.schedulePolling()
+          } else {
+            logger.info("Rig state polling task exiting...")
+            return
+          }
+      }
   }
 
   enum State {
@@ -276,35 +279,13 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
     case TOKEN_SENT
     case STARTED
   }
-  
-  struct ExpectedResponse {
-    // Excluding the preamble (FE FE E0 A4)
-    var expectedPrefix: [UInt8]
-    // Excluding the preamble, expected prefix and the ending sentinal (FD)
-    var expectedLength: Int
-    
-    func matches(_ response: Data) -> Bool {
-      return (response.count == 4 + expectedPrefix.count + expectedLength + 1) &&
-        response[0 ... 3].elementsEqual([0xFE, 0xFE, 0xE0, 0xA4]) && response
-        .last == 0xFD &&
-        response[4 ..< 4 + expectedPrefix.count].elementsEqual(expectedPrefix)
-    }
-    
-    static func ok() -> ExpectedResponse {
-      .init(expectedPrefix: [0xFB], expectedLength: 0)
-    }
-  }
 
+  var rigStateObserver: RigStateObserver?
   var ic705: CBPeripheral?
+  
   private var state: State
   private var waitForStartSema: DispatchSemaphore?
   private var ctlChar: CBCharacteristic?
-  private var sendPacketSema: DispatchSemaphore
-  
-  private var mu: DispatchSemaphore
-  private var waitForValueNotifySema: DispatchSemaphore?
-  private var expectedResponse: ExpectedResponse?
-  private var valueNotification: Result<Data, Error>?
 }
 
 private let kCivPreamble: [UInt8] = [0xFE, 0xFE, 0xA4, 0xE0]
@@ -316,121 +297,101 @@ private func chainBytes(_ bs: [UInt8]...) -> [UInt8] {
   }
   return result
 }
-
 public enum RigError : Error {
   case MalformedResponseError
   case TryAgainError
 }
 
-public class MyIc705: Rig {
+public class MyIc705: Rig, RigStateObserver {
+ 
   public init() {
-    btMgr = nil
-    btDelegate = nil
+  }
+  
+  func observe(vfoAFreq: Int) {
+    rigStateMu.wait()
+    rigState.vfoAFreq = vfoAFreq
+    rigStateMu.signal()
+  }
+  
+  func observe(vfoBFreq: Int) {
+    rigStateMu.wait()
+    rigState.vfoBFreq = vfoBFreq
+    rigStateMu.signal()
+  }
+  
+  func observe(connected _: Bool) {
+    self.connectCompletion?()
   }
 
-  public func connect() {
+  public func connect(completion: @escaping () -> Void) {
+    self.connectCompletion = completion
     btDelegate = Ic705BtDelegate()
+    btDelegate!.rigStateObserver = self
     btMgr = CBCentralManager(delegate: btDelegate, queue: .global())
-    btDelegate?.waitForStart()
   }
   
   public func disconnect() {
     if let p = btDelegate?.ic705 {
       btMgr?.cancelPeripheralConnection(p)
     }
+    btDelegate = nil
+    btMgr = nil
   }
 
-  public func getVfoAFreq() -> Result<Int, Error> {
-    let r = btDelegate?.sendPacket(.init(
-      chainBytes(kCivPreamble, [0x25, 0x00, 0xFD])
-    ), expect: .init(expectedPrefix: [0x25, 0x00], expectedLength: 5))
-    switch r {
-    case .none:
-      return .failure(RigError.MalformedResponseError)
-    case .failure(let err):
-      return .failure(err)
-    case .success(let data):
-      return .success(fromBCD(data[6...10]))
-    }
+  public func getVfoAFreq() -> Int {
+    rigStateMu.wait()
+    let f = rigState.vfoAFreq
+    rigStateMu.signal()
+    return f
   }
 
-  public func getVfoBFreq() -> Result<Int, Error> {
-    let r = btDelegate?.sendPacket(.init(
-      chainBytes(kCivPreamble, [0x25, 0x01, 0xFD])
-    ), expect: .init(expectedPrefix: [0x25, 0x01], expectedLength: 5))
-    switch r {
-    case .none:
-      return .failure(RigError.MalformedResponseError)
-    case .failure(let err):
-      return .failure(err)
-    case .success(let data):
-      return .success(fromBCD(data[6...10]))
-    }
-
+  public func getVfoBFreq() -> Int {
+    rigStateMu.wait()
+    let f = rigState.vfoBFreq
+    rigStateMu.signal()
+    return f
   }
 
   public func setVfoAFreq(_ f: Int) {
-    let r = btDelegate?.sendPacket(.init(
+    btDelegate?.sendPacket(.init(
       chainBytes(kCivPreamble, [0x25, 0x00], toBCD(f), [0xFD])
-    ), expect: .ok())
-    switch r {
-    case let .failure(err):
-      logger.error("Error setting VFO A freq. \(err)")
-    default:
-      break
-    }
+    ))
   }
 
   public func setVfoBFreq(_ f: Int) {
-    let r = btDelegate?.sendPacket(.init(
+    btDelegate?.sendPacket(.init(
       chainBytes(kCivPreamble, [0x25, 0x01], toBCD(f), [0xFD])
-    ), expect: .ok())
-    switch r {
-    case let .failure(err):
-      logger.error("Error setting VFO B freq. \(err)")
-    default:
-      break
-    }
+    ))
   }
 
   public func enableSplit() {
-    let r = btDelegate?.sendPacket(.init(
+    btDelegate?.sendPacket(.init(
       chainBytes(kCivPreamble, [0x0F, 0x01, 0xFD])
-    ), expect: .ok())
-    switch r {
-    case let .failure(err):
-      logger.error("Error enabling split. \(err)")
-    default:
-      break
-    }
+    ))
   }
 
   public func setVfoAMode(_ m: Mode) {
-    let r = btDelegate?.sendPacket(.init(
+    btDelegate?.sendPacket(.init(
       chainBytes(kCivPreamble, [0x26, 0x00, m.toCivByte(), 00, 0xFD])
-    ), expect: .ok())
-    switch r {
-    case let .failure(err):
-      logger.error("Error setting VFO A mode. \(err)")
-    default:
-      break
-    }
+    ))
   }
 
   public func setVfoBMode(_ m: Mode) {
-    let r = btDelegate?.sendPacket(.init(
+    btDelegate?.sendPacket(.init(
       chainBytes(kCivPreamble, [0x26, 0x01, m.toCivByte(), 00, 0xFD])
-    ), expect: .ok())
-    switch r {
-    case let .failure(err):
-      logger.error("Error setting VFO B mode. \(err)")
-    default:
-      break
-    }
+    ))
   }
 
-  private var btDelegate: Ic705BtDelegate?
-  private var btMgr: CBCentralManager?
+  private var btDelegate: Ic705BtDelegate? = nil
+  private var btMgr: CBCentralManager? = nil
+  private var connectCompletion: (() -> Void)? = nil
+  
+  private struct RigState {
+    var vfoAFreq: Int = 0
+    var vfoBFreq: Int = 0
+  }
+  private var rigState = RigState()
+  private var rigStateMu = DispatchSemaphore(value: 1)
 }
 
 fileprivate func toBCD(_ v: Int) -> [UInt8] {

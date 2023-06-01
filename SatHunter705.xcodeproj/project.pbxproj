@@ -7,9 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D12952402A28004D00334302 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = D129523F2A28004D00334302 /* SwiftProtobuf */; };
+		D12952422A28006800334302 /* sat_info.proto in Sources */ = {isa = PBXBuildFile; fileRef = D12952412A28006800334302 /* sat_info.proto */; };
+		D12952492A2806E600334302 /* SatInfoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12952482A2806E600334302 /* SatInfoManager.swift */; };
+		D129524A2A2806E600334302 /* SatInfoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12952482A2806E600334302 /* SatInfoManager.swift */; };
 		D1403E5C2A230604000E873B /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1403E5B2A230604000E873B /* main.swift */; };
 		D1403E642A23082C000E873B /* libpredict.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D1403E342A2303ED000E873B /* libpredict.framework */; };
 		D1403E652A23082C000E873B /* libpredict.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D1403E342A2303ED000E873B /* libpredict.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D15190E32A2815850045DE4C /* sat_info.proto in Sources */ = {isa = PBXBuildFile; fileRef = D12952412A28006800334302 /* sat_info.proto */; };
+		D15190EB2A2817650045DE4C /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = D15190EA2A2817650045DE4C /* SwiftProtobuf */; };
 		D1A738752A230C69002832A1 /* sdp4.c in Sources */ = {isa = PBXBuildFile; fileRef = D1A738642A230C69002832A1 /* sdp4.c */; };
 		D1A738762A230C69002832A1 /* moon.c in Sources */ = {isa = PBXBuildFile; fileRef = D1A738652A230C69002832A1 /* moon.c */; };
 		D1A738782A230C69002832A1 /* orbit.c in Sources */ = {isa = PBXBuildFile; fileRef = D1A738682A230C69002832A1 /* orbit.c */; };
@@ -41,6 +47,36 @@
 		D1A738C82A2550B6002832A1 /* SatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738C72A2550B6002832A1 /* SatView.swift */; };
 		D1A738CA2A25A485002832A1 /* Rig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738C92A25A485002832A1 /* Rig.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		D12952462A2803E300334302 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.proto";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).pb.swift",
+			);
+			runOncePerArchitecture = 0;
+			script = "export PATH=$PATH:/opt/homebrew/bin\nprotoc --proto_path=\"$INPUT_FILE_DIR\" --swift_out=\"$DERIVED_FILE_DIR\" \"$INPUT_FILE_PATH\"\n";
+		};
+		D15190E42A2816100045DE4C /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.proto";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).pb.swift",
+			);
+			script = "export PATH=$PATH:/opt/homebrew/bin\nprotoc --proto_path=\"$INPUT_FILE_DIR\" --swift_out=\"$DERIVED_FILE_DIR\" \"$INPUT_FILE_PATH\"\n";
+		};
+/* End PBXBuildRule section */
 
 /* Begin PBXContainerItemProxy section */
 		D1403E662A23082C000E873B /* PBXContainerItemProxy */ = {
@@ -108,6 +144,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D12952412A28006800334302 /* sat_info.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = sat_info.proto; sourceTree = "<group>"; };
+		D12952482A2806E600334302 /* SatInfoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatInfoManager.swift; sourceTree = "<group>"; };
 		D1403E342A2303ED000E873B /* libpredict.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = libpredict.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1403E592A230604000E873B /* LibPredictTestProgram */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = LibPredictTestProgram; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1403E5B2A230604000E873B /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -152,6 +190,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D12952402A28004D00334302 /* SwiftProtobuf in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -175,6 +214,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D15190EB2A2817650045DE4C /* SwiftProtobuf in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,6 +228,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D12952472A2803FD00334302 /* Protos */ = {
+			isa = PBXGroup;
+			children = (
+				D12952412A28006800334302 /* sat_info.proto */,
+			);
+			path = Protos;
+			sourceTree = "<group>";
+		};
 		D1403E282A2303C9000E873B = {
 			isa = PBXGroup;
 			children = (
@@ -263,6 +311,7 @@
 		D1A7388D2A24235B002832A1 /* SatHunter705 */ = {
 			isa = PBXGroup;
 			children = (
+				D12952472A2803FD00334302 /* Protos */,
 				D1A738C92A25A485002832A1 /* Rig.swift */,
 				D1A738BC2A2475AD002832A1 /* Info.plist */,
 				D1A738852A230F81002832A1 /* LibPredict.swift */,
@@ -274,6 +323,7 @@
 				D1A738BD2A250C06002832A1 /* SatListView.swift */,
 				D1A738BF2A250CA4002832A1 /* TleManager.swift */,
 				D1A738C72A2550B6002832A1 /* SatView.swift */,
+				D12952482A2806E600334302 /* SatInfoManager.swift */,
 			);
 			path = SatHunter705;
 			sourceTree = "<group>";
@@ -335,6 +385,9 @@
 			dependencies = (
 			);
 			name = libpredict;
+			packageProductDependencies = (
+				D129523F2A28004D00334302 /* SwiftProtobuf */,
+			);
 			productName = libpredict;
 			productReference = D1403E342A2303ED000E873B /* libpredict.framework */;
 			productType = "com.apple.product-type.framework";
@@ -368,6 +421,7 @@
 				D1A738BB2A242434002832A1 /* Embed Frameworks */,
 			);
 			buildRules = (
+				D12952462A2803E300334302 /* PBXBuildRule */,
 			);
 			dependencies = (
 				D1A738BA2A242434002832A1 /* PBXTargetDependency */,
@@ -386,11 +440,16 @@
 				D1A738992A24235D002832A1 /* Resources */,
 			);
 			buildRules = (
+				D15190E42A2816100045DE4C /* PBXBuildRule */,
 			);
 			dependencies = (
+				D15190E72A2816C90045DE4C /* PBXTargetDependency */,
 				D1A7389D2A24235D002832A1 /* PBXTargetDependency */,
 			);
 			name = SatHunter705Tests;
+			packageProductDependencies = (
+				D15190EA2A2817650045DE4C /* SwiftProtobuf */,
+			);
 			productName = SatHunter705Tests;
 			productReference = D1A7389B2A24235D002832A1 /* SatHunter705Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -434,7 +493,6 @@
 					};
 					D1A7389A2A24235D002832A1 = {
 						CreatedOnToolsVersion = 14.3;
-						TestTargetID = D1A7388B2A24235B002832A1;
 					};
 					D1A738A42A24235D002832A1 = {
 						CreatedOnToolsVersion = 14.3;
@@ -451,6 +509,9 @@
 				Base,
 			);
 			mainGroup = D1403E282A2303C9000E873B;
+			packageReferences = (
+				D129523E2A28004D00334302 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+			);
 			productRefGroup = D1403E352A2303ED000E873B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -529,9 +590,11 @@
 			files = (
 				D1A738912A24235B002832A1 /* TrackingView.swift in Sources */,
 				D1A738C02A250CA4002832A1 /* TleManager.swift in Sources */,
+				D12952422A28006800334302 /* sat_info.proto in Sources */,
 				D1A738B62A242398002832A1 /* LibPredict.swift in Sources */,
 				D1A738C62A25441D002832A1 /* RigControlView.swift in Sources */,
 				D1A7388F2A24235B002832A1 /* SatHunter705App.swift in Sources */,
+				D12952492A2806E600334302 /* SatInfoManager.swift in Sources */,
 				D1A738C82A2550B6002832A1 /* SatView.swift in Sources */,
 				D1A738CA2A25A485002832A1 /* Rig.swift in Sources */,
 				D1A738BE2A250C06002832A1 /* SatListView.swift in Sources */,
@@ -542,6 +605,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D15190E32A2815850045DE4C /* sat_info.proto in Sources */,
+				D129524A2A2806E600334302 /* SatInfoManager.swift in Sources */,
 				D1A738A02A24235D002832A1 /* SatHunter705Tests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -562,6 +627,10 @@
 			isa = PBXTargetDependency;
 			target = D1403E332A2303ED000E873B /* libpredict */;
 			targetProxy = D1403E662A23082C000E873B /* PBXContainerItemProxy */;
+		};
+		D15190E72A2816C90045DE4C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = D15190E62A2816C90045DE4C /* SwiftProtobuf */;
 		};
 		D1A7389D2A24235D002832A1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1098,7 +1167,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -1149,7 +1217,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -1157,12 +1226,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = sealscript.net.SatHunter705Tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SatHunter705.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SatHunter705";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -1171,7 +1242,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -1216,19 +1286,22 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = sealscript.net.SatHunter705Tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SatHunter705.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SatHunter705";
+				TARGETED_DEVICE_FAMILY = 1;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -1429,6 +1502,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D129523E2A28004D00334302 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D129523F2A28004D00334302 /* SwiftProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D129523E2A28004D00334302 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobuf;
+		};
+		D15190E62A2816C90045DE4C /* SwiftProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D129523E2A28004D00334302 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobuf;
+		};
+		D15190EA2A2817650045DE4C /* SwiftProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D129523E2A28004D00334302 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobuf;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D1403E292A2303C9000E873B /* Project object */;
 }

@@ -6,7 +6,6 @@
 //
 
 import XCTest
-@testable import SatHunter705
 
 final class SatHunter705Tests: XCTestCase {
 
@@ -26,11 +25,9 @@ final class SatHunter705Tests: XCTestCase {
         // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
     }
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+    func testSatInfoManager() throws {
+      var mgr = SatInfoManager()
+      print("\(mgr.satellites[25544].debugDescription)")
     }
 
 }

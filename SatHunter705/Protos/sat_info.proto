@@ -1,0 +1,29 @@
+syntax = "proto2";
+
+message Tle {
+  optional string line1 = 1;
+  optional string line2 = 2;
+}
+
+message Transponder {
+  optional string mode = 1;
+  optional int64 downlink_freq_lower = 2;
+  // {}_upper can be 0 which means the transponder does not have
+  // a frequency range.
+  optional int64 downlink_freq_upper = 3;
+  optional int64 uplink_freq_lower = 4;
+  optional int64 uplink_freq_upper = 5;
+}
+
+message Satellite {
+  optional string name = 1;
+  optional int32 norad_id = 2;
+  optional Tle tle = 3;
+  repeated Transponder transponders = 4;
+  optional bool is_active = 5;
+}
+
+message SatelliteList {
+  repeated Satellite items = 1;
+  optional int64 last_updated_ts = 2;
+}

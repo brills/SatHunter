@@ -45,33 +45,6 @@ public class SatObserver {
   private var ptrInternal: UnsafeMutablePointer<predict_observer_t>
 }
 
-public let kDefaultTleUrl = URL(string: "https://www.amsat.org/tle/current/dailytle.txt")!
-public func downloadAmsatTleFile(_ url: URL? = nil) -> Result<String, Error> {
-  do {
-    let contents = try String(contentsOf: url ?? kDefaultTleUrl)
-    return .success(contents)
-  } catch {
-    return .failure(error)
-  }
-}
-// sat name -> TLE
-public typealias TleDict = [String: (String, String)]
-
-enum ParseTleError : Error {
-  case UnexpectedLineCount
-}
-public func parseTleFile(_ contents: String) -> Result<TleDict, Error> {
-  var result: TleDict = [:]
-  let lines = contents.split(whereSeparator: \.isNewline)
-  if lines.count % 3 != 0 {
-    return .failure(ParseTleError.UnexpectedLineCount)
-  }
-  for i in stride(from: 0, to: lines.count, by: 3) {
-    result[String(lines[i])] = (String(lines[i + 1]), String(lines[i + 2]))
-  }
-  return .success(result)
-}
-
 public struct SatPass {
   var aos: predict_observation
   var los: predict_observation

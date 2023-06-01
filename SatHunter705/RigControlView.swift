@@ -100,7 +100,22 @@ class DopplerShiftModel: NSObject, ObservableObject, CLLocationManagerDelegate {
 }
 
 class RadioModel : ObservableObject {
-  @Published var isConnected: Bool = false
+  enum ConnectionState {
+    case NotConnected
+    case Connecting
+    case Connected
+    var description: String {
+      switch self {
+      case .Connected:
+        return "Connected"
+      case .NotConnected:
+        return "Connect"
+      case .Connecting:
+        return "Connecting"
+      }
+    }
+  }
+  @Published var connectionState: ConnectionState = .NotConnected
   @Published var vfoAFreq: Int = 0
   @Published var vfoBFreq: Int = 0
   var mode: Mode = .LSB {
@@ -122,13 +137,17 @@ class RadioModel : ObservableObject {
   }
   
   func connect() {
-    rig.connect()
-    self.isConnected = true
+    connectionState = .Connecting
+    rig.connect {
+      DispatchQueue.main.async {
+        self.connectionState = .Connected
+      }
+    }
   }
   
   func disconnect() {
     rig.disconnect()
-    self.isConnected = false
+    connectionState = .NotConnected
   }
   
   func startTracking() {
@@ -144,7 +163,7 @@ class RadioModel : ObservableObject {
   }
   
   func configRig() {
-    if !isConnected {
+    if connectionState != .Connected {
       return
     }
     rig.enableSplit()
@@ -160,6 +179,9 @@ class RadioModel : ObservableObject {
   }
   
   private func syncFreq() {
+    if connectionState != .Connected {
+      return
+    }
     if let m = dopplerShiftModel {
       if let freq = m.actualDownlinkFreq {
         rig.setVfoAFreq(freq)
@@ -258,16 +280,21 @@ struct RigControlView: View {
       Divider()
       HStack {
         Text("Radio")
-        Button(radioModel.isConnected ? "Connected" : "Connect") {
-          if !radioModel.isConnected {
+        Button(radioModel.connectionState.description) {
+          switch radioModel.connectionState {
+          case .NotConnected:
             radioModel.connect()
+          case .Connected:
+            fallthrough
+          case .Connecting:
+            radioModel.disconnect()
           }
         }
         Toggle(isOn: $radioIsTracking) {
-          Text("Tracking")
+          Text(radioIsTracking ? "Tracking": "Track")
         }
         .toggleStyle(.button)
-        .disabled(!radioModel.isConnected || trackedSatTle == nil)
+        .disabled(radioModel.connectionState != .Connected || trackedSatTle == nil)
         .onChange(of: radioIsTracking) {
           newValue in
           if newValue {
@@ -323,6 +350,7 @@ struct RigControlView: View {
       dopplerShiftModel.uplinkFreq = 0
     }
   }
+  
 }
 
 struct RigControlView_Previews: PreviewProvider {
