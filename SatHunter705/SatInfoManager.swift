@@ -61,12 +61,14 @@ extension Transponder {
   }
 }
 
+fileprivate let kInfoFileName = "sat_info.pbbin"
+
 class SatInfoManager {
-  private let kInfoFileName = "sat_info.pbbin"
   var satellites: [Int: Satellite] = [:]
+  var lastUpdated: Date? = nil
   
-  init() {
-    if !loadLocally() {
+  init(onlyLoadLocally: Bool = false) {
+    if !loadLocally() && !onlyLoadLocally{
       _ = loadFromInternet()
     }
   }
@@ -83,6 +85,7 @@ class SatInfoManager {
         for sat in sats.items {
           satellites[Int(sat.noradID)] = sat
         }
+        lastUpdated = .init(timeIntervalSince1970: Double(sats.lastUpdatedTs))
       } else {
         return false
       }
@@ -110,6 +113,8 @@ class SatInfoManager {
       satellites[id] = sat
       proto.items.append(sat)
     }
+    lastUpdated = Date.now
+    proto.lastUpdatedTs = Int64(lastUpdated!.timeIntervalSince1970)
     let fm = FileManager.default
     let appSupportDir = try! fm.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
     let tmpFile = appSupportDir.appending(component: kInfoFileName + ".tmp")
@@ -182,16 +187,6 @@ class SatInfoManager {
       result[noradId, default: []].append(proto)
     }
     return result
-  }
-  
-  func lastLoadTime() -> Date? {
-    let fm = FileManager.default
-    let appSupportDir = try! fm.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-    let f = appSupportDir.appending(component: kInfoFileName)
-    if !fm.fileExists(atPath: f.path) {
-      return nil
-    }
-    return try? fm.attributesOfFileSystem(forPath: kInfoFileName)[.creationDate] as? Date
   }
 }
  

@@ -156,13 +156,28 @@ struct SatListView : View {
             }.font(.footnote)
           }
         }
-      }.font(.body.monospaced()).refreshable {
+      }
+      .refreshable {
         await store.load()
-      }.overlay(Group {
+      }
+      .overlay(Group {
         if items.isEmpty {
           Text("Pull down to refresh.")
         }
       })
-    }.searchable(text: $searchText)
+      .onAppear {
+        Task.detached {
+          await self.store.load()
+        }
+      }
+      .toolbar {
+        ToolbarItem(placement: .primaryAction) {
+          NavigationLink (destination: SettingsView()) {
+            Image(systemName: "gearshape")
+          }
+        }
+      }
+    }
+    .searchable(text: $searchText)
   }
 }

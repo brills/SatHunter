@@ -45,6 +45,7 @@
 		D1A738C62A25441D002832A1 /* RigControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738C52A25441D002832A1 /* RigControlView.swift */; };
 		D1A738C82A2550B6002832A1 /* SatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738C72A2550B6002832A1 /* SatView.swift */; };
 		D1A738CA2A25A485002832A1 /* Rig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738C92A25A485002832A1 /* Rig.swift */; };
+		D1F547912A29B15700AED698 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1F547902A29B15700AED698 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -181,6 +182,7 @@
 		D1A738C52A25441D002832A1 /* RigControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RigControlView.swift; sourceTree = "<group>"; };
 		D1A738C72A2550B6002832A1 /* SatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatView.swift; sourceTree = "<group>"; };
 		D1A738C92A25A485002832A1 /* Rig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Rig.swift; sourceTree = "<group>"; };
+		D1F547902A29B15700AED698 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -321,6 +323,7 @@
 				D1A738BD2A250C06002832A1 /* SatListView.swift */,
 				D1A738C72A2550B6002832A1 /* SatView.swift */,
 				D12952482A2806E600334302 /* SatInfoManager.swift */,
+				D1F547902A29B15700AED698 /* SettingsView.swift */,
 			);
 			path = SatHunter705;
 			sourceTree = "<group>";
@@ -590,6 +593,7 @@
 				D1A738B62A242398002832A1 /* LibPredict.swift in Sources */,
 				D1A738C62A25441D002832A1 /* RigControlView.swift in Sources */,
 				D1A7388F2A24235B002832A1 /* SatHunter705App.swift in Sources */,
+				D1F547912A29B15700AED698 /* SettingsView.swift in Sources */,
 				D12952492A2806E600334302 /* SatInfoManager.swift in Sources */,
 				D1A738C82A2550B6002832A1 /* SatView.swift in Sources */,
 				D1A738CA2A25A485002832A1 /* Rig.swift in Sources */,

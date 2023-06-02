@@ -16,6 +16,19 @@ fileprivate let k705BtleControlService =
 fileprivate let k705BtleServiceChar =
   CBUUID(string: "14CF8002-1EC2-D408-1B04-2EB270F14203")
 
+public func getBtId(requestNew: Bool = false) -> UUID {
+  if let stored = UserDefaults.standard.string(forKey: "BTID") {
+    if let uuid = UUID(uuidString: stored) {
+      if !requestNew {
+        return uuid
+      }
+    }
+  }
+  let new = UUID()
+  UserDefaults.standard.set(new.uuidString, forKey: "BTID")
+  return new
+}
+
 public enum Mode {
   case LSB
   case USB
@@ -152,7 +165,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
       return
     }
     var idPacket: [UInt8] = [0xFE, 0xF1, 0x00, 0x61]
-    withUnsafeBytes(of: kMyUUID.uuid) {
+    withUnsafeBytes(of: getBtId().uuid) {
       b in
       for i in 0 ..< b.count {
         idPacket.append(b.load(fromByteOffset: i, as: UInt8.self))
@@ -179,7 +192,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
     switch state {
     case .ID_SENT:
       var namePacket: [UInt8] = [0xFE, 0xF1, 0x00, 0x62]
-      "my laptop       ".utf8CString.withUnsafeBytes {
+      "SatHunter705    ".utf8CString.withUnsafeBytes {
         b in
         for i in 0 ..< 16 {
           namePacket.append(b.load(fromByteOffset: i, as: UInt8.self))
