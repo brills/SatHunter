@@ -99,6 +99,12 @@ class DopplerShiftModel: NSObject, ObservableObject, CLLocationManagerDelegate {
   }
 }
 
+extension Int {
+  var asFormattedFreq: String {
+    String(format:"%010.06f", Double(self) / 1e6)
+  }
+}
+
 class RadioModel : ObservableObject {
   enum ConnectionState {
     case NotConnected
@@ -131,6 +137,7 @@ class RadioModel : ObservableObject {
   var dopplerShiftModel: DopplerShiftModel?
   private var rig: MyIc705
   private var timer: Timer?
+  private var isTracking: Bool = false
   
   init() {
     self.rig = MyIc705()
@@ -141,25 +148,44 @@ class RadioModel : ObservableObject {
     rig.connect {
       DispatchQueue.main.async {
         self.connectionState = .Connected
+        self.startLoop()
       }
     }
   }
   
   func disconnect() {
+    self.stopLoop()
     rig.disconnect()
     connectionState = .NotConnected
+    vfoAFreq = 0
+    vfoBFreq = 0
   }
   
-  func startTracking() {
+  func startLoop() {
     if timer != nil {
       timer!.invalidate()
     }
     configRig()
     timer = Timer.scheduledTimer(
-      withTimeInterval: 1,
+      withTimeInterval: 0.5,
       repeats: true,
       block: { _ in self.syncFreq() }
     )
+  }
+  
+  func stopLoop() {
+    if let timer = timer {
+      timer.invalidate()
+    }
+    timer = nil
+  }
+  
+  func startTracking() {
+    isTracking = true
+  }
+  
+  func stopTracking() {
+    isTracking = false
   }
   
   func configRig() {
@@ -171,25 +197,22 @@ class RadioModel : ObservableObject {
     rig.setVfoBMode(vfoBMode)
   }
   
-  func stopTracking() {
-    if let timer = timer {
-      timer.invalidate()
-    }
-    timer = nil
-  }
-   
   private func syncFreq() {
     if connectionState != .Connected {
       return
     }
-    if let m = dopplerShiftModel {
-      if let freq = m.actualDownlinkFreq {
-        rig.setVfoAFreq(freq)
-      }
-      if let freq = m.actualUplinkFreq {
-        rig.setVfoBFreq(freq)
+    if isTracking {
+      if let m = dopplerShiftModel {
+        if let freq = m.actualDownlinkFreq {
+          rig.setVfoAFreq(freq)
+        }
+        if let freq = m.actualUplinkFreq {
+          rig.setVfoBFreq(freq)
+        }
       }
     }
+    vfoAFreq = rig.getVfoAFreq()
+    vfoBFreq = rig.getVfoBFreq()
   }
 }
 
@@ -263,6 +286,9 @@ struct RigControlView: View {
         if trackedSat == nil {
           Text("No transponder info available")
         } else {
+          // Bug: the picker dropdown is redrawn as the doppler model refreshes
+          // causing glitches.
+          // https://developer.apple.com/forums/thread/127218
           Picker("Transponder", selection: $transponderIdx) {
             ForEach(trackedSat!.transponders.indices, id: \.self) {
               i in
@@ -292,69 +318,65 @@ struct RigControlView: View {
       }
       HStack {
         Image(systemName: "arrow.down")
-        Picker(selection: $selectedVfoAMode, label: Text("VFO A Mode")) {
-          Text("LSB").tag(Mode.LSB)
-          Text("USB").tag(Mode.USB)
-          Text("FM").tag(Mode.FM)
-        }
-        .pickerStyle(.segmented)
-        .onChange(of: selectedVfoAMode) {
-          _ in
-          radioModel.vfoAMode = selectedVfoAMode
+        VStack {
+          Picker(selection: $selectedVfoAMode, label: Text("VFO A Mode")) {
+            Text("LSB").tag(Mode.LSB)
+            Text("USB").tag(Mode.USB)
+            Text("FM").tag(Mode.FM)
+          }
+          .pickerStyle(.segmented)
+          .onChange(of: selectedVfoAMode) {
+            _ in
+            radioModel.vfoAMode = selectedVfoAMode
+          }
+          Text(getVfoAFreq())
+            .font(.body.monospaced())
+            .frame(maxHeight: .infinity)
         }
         Divider()
         Image(systemName: "arrow.up")
-        Picker(selection: $selectedVfoBMode, label: Text("VFO B Mode")) {
-          Text("LSB").tag(Mode.LSB)
-          Text("USB").tag(Mode.USB)
-          Text("FM").tag(Mode.FM)
-        }
-        .pickerStyle(.segmented)
-        .onChange(of: selectedVfoBMode) {
-          _ in
-          radioModel.vfoBMode = selectedVfoBMode
+        VStack {
+          Picker(selection: $selectedVfoBMode, label: Text("VFO B Mode")) {
+            Text("LSB").tag(Mode.LSB)
+            Text("USB").tag(Mode.USB)
+            Text("FM").tag(Mode.FM)
+          }
+          .pickerStyle(.segmented)
+          .onChange(of: selectedVfoBMode) {
+            _ in
+            radioModel.vfoBMode = selectedVfoBMode
+          }
+          Text(getVfoBFreq())
+            .font(.body.monospaced())
+            .frame(maxHeight: .infinity)
         }
       }
       HStack {
-        HStack {
-          Button(radioModel.connectionState.description) {
-            switch radioModel.connectionState {
-            case .NotConnected:
-              radioModel.connect()
-            case .Connected:
-              fallthrough
-            case .Connecting:
-              radioModel.disconnect()
-            }
+        Button(radioModel.connectionState.description) {
+          switch radioModel.connectionState {
+          case .NotConnected:
+            radioModel.connect()
+          case .Connected:
+            fallthrough
+          case .Connecting:
+            radioModel.disconnect()
           }
-          Toggle(isOn: $radioIsTracking) {
-            Text(radioIsTracking ? "Tracking": "Track")
-          }
-          .toggleStyle(.button)
-          .disabled(radioModel.connectionState != .Connected || trackedSat == nil)
-          .onChange(of: radioIsTracking) {
-            newValue in
-            if newValue {
-              radioModel.startTracking()
-            } else {
-              radioModel.stopTracking()
-            }
+        }
+        Toggle(isOn: $radioIsTracking) {
+          Text(radioIsTracking ? "Tracking" : "Track")
+        }
+        .toggleStyle(.button)
+        .disabled(radioModel
+          .connectionState != .Connected || trackedSat == nil)
+        .onChange(of: radioIsTracking) {
+          newValue in
+          if newValue {
+            radioModel.startTracking()
+          } else {
+            radioModel.stopTracking()
           }
         }
         Spacer()
-        HStack {
-          Image(systemName: "arrow.down")
-          Text(getVfoAFreq())
-            .frame(maxHeight: .infinity)
-          Spacer()
-          Divider()
-          Image(systemName: "arrow.up")
-          Text(getVfoBFreq())
-            .frame(maxHeight: .infinity)
-          Spacer()
-        }
-        .fixedSize(horizontal: true, vertical: false)
-        .font(.body.monospaced())
       }
     }
     .buttonStyle(.bordered)
@@ -388,26 +410,26 @@ struct RigControlView: View {
 
   private func getVfoAFreq() -> String {
     if radioModel.vfoAFreq > 0 {
-      return String(format: "%07.03f", Double(radioModel.vfoAFreq) / 1e6)
+      return radioModel.vfoAFreq.asFormattedFreq
     }
     return "N/A"
   }
   private func getVfoBFreq() -> String {
     if radioModel.vfoBFreq > 0 {
-      return String(format: "%07.03f", Double(radioModel.vfoBFreq) / 1e6)
+      return radioModel.vfoBFreq.asFormattedFreq
     }
     return "N/A"
   }
   private func getActualDownlinkFreq() -> String {
     if let f = dopplerShiftModel.actualDownlinkFreq {
-      return String(format: "%010.06f", Double(f) / 1e6)
+      return f.asFormattedFreq
     }
     return "N/A"
   }
 
   private func getActualUplinkFreq() -> String {
     if let f = dopplerShiftModel.actualUplinkFreq {
-      return String(format: "%010.06f", Double(f) / 1e6)
+      return f.asFormattedFreq
     }
     return "N/A"
   }
@@ -427,5 +449,4 @@ struct RigControlView: View {
       dopplerShiftModel.uplinkFreq = 0
     }
   }
-  
 }

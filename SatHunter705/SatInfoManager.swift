@@ -66,7 +66,6 @@ class SatInfoManager {
   var satellites: [Int: Satellite] = [:]
   
   init() {
-    _ = loadFromInternet()
     if !loadLocally() {
       _ = loadFromInternet()
     }
