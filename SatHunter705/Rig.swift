@@ -57,6 +57,24 @@ public enum Mode {
   }
 }
 
+public enum ToneFreq: Int, CaseIterable, Identifiable {
+  public var id: Int {
+    self.rawValue
+  }
+  
+  case NotSet = 0
+  case F67 = 670
+  case F88_5 = 885
+  case F141_3 = 1413
+  
+  var description: String {
+    if self == .NotSet {
+      return "No CTCSS"
+    }
+    return .init(format: "%5.01f", Double(self.rawValue) / 10)
+  }
+}
+
 public protocol Rig {
   func connect(completion: @escaping () -> Void)
   func disconnect()
@@ -105,7 +123,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
     if let name = peripheral.name {
       if name == "ICOM BT(IC-705)" {
         logger
-          .info(
+          .debug(
             "Discovered ic705: \(peripheral.description)\nDATA:\n\(advertisementData)"
           )
         ic705 = peripheral
@@ -148,7 +166,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
       return
     }
     for service in peripheral.services! {
-      logger.info("Discovered service: \(service)")
+      logger.debug("Discovered service: \(service)")
       if service.uuid == k705BtleControlService {
         peripheral.discoverCharacteristics([k705BtleServiceChar], for: service)
       }
@@ -392,6 +410,36 @@ public class MyIc705: Rig, RigStateObserver {
   public func setVfoBMode(_ m: Mode) {
     btDelegate?.sendPacket(.init(
       chainBytes(kCivPreamble, [0x26, 0x01, m.toCivByte(), 00, 0xFD])
+    ))
+  }
+  
+  public func enableVfoARepeaterTone(_ b: Bool) {
+    let enableByte: UInt8 = b ? 0x01 : 0x00
+     btDelegate?.sendPacket(.init(
+      chainBytes(kCivPreamble, [0x16, 0x42, enableByte, 0xFD])
+    ))
+  }
+  
+  public func selectVfo(_ vfoA: Bool) {
+    let selectionByte: UInt8 = vfoA ? 0x00: 0x01
+     btDelegate?.sendPacket(.init(
+      chainBytes(kCivPreamble, [0x07, selectionByte, 0xFD])
+    ))
+  }
+  
+  public func setVfoAToneFreq(_ toneFreq: ToneFreq) {
+    var b1: UInt8 = 0
+    var b2: UInt8 = 0
+    var v = toneFreq.rawValue
+    b1 |= UInt8((v / 1000) << 4)
+    v %= 1000
+    b1 |= UInt8(v / 100)
+    v %= 100
+    b2 |= UInt8((v / 10) << 4)
+    v %= 10
+    b2 |= UInt8(v)
+    btDelegate?.sendPacket(.init(
+      chainBytes(kCivPreamble, [0x1B, 00, b1, b2, 0xFD])
     ))
   }
 

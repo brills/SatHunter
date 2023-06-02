@@ -134,6 +134,11 @@ class RadioModel : ObservableObject {
       configRig()
     }
   }
+  var ctcss: ToneFreq = .NotSet {
+    didSet {
+      configCtcss()
+    }
+  }
   var dopplerShiftModel: DopplerShiftModel?
   private var rig: MyIc705
   private var timer: Timer?
@@ -166,6 +171,7 @@ class RadioModel : ObservableObject {
       timer!.invalidate()
     }
     configRig()
+    configCtcss()
     timer = Timer.scheduledTimer(
       withTimeInterval: 0.5,
       repeats: true,
@@ -195,6 +201,22 @@ class RadioModel : ObservableObject {
     rig.enableSplit()
     rig.setVfoAMode(vfoAMode)
     rig.setVfoBMode(vfoBMode)
+  }
+  
+  func configCtcss() {
+    if connectionState != .Connected {
+      return
+    }
+    if ctcss == .NotSet {
+      rig.selectVfo(false)
+      rig.enableVfoARepeaterTone(false)
+      rig.selectVfo(true)
+    } else {
+      rig.selectVfo(false)
+      rig.enableVfoARepeaterTone(true)
+      rig.setVfoAToneFreq(ctcss)
+      rig.selectVfo(true)
+    }
   }
   
   private func syncFreq() {
@@ -228,6 +250,7 @@ struct RigControlView: View {
   @ObservedObject var radioModel = RadioModel()
   @State private var radioIsTracking: Bool = false
   @State private var transponderIdx: Int = 0
+  @State private var selectedCtcss: ToneFreq = .NotSet
 
   var body: some View {
     VStack {
@@ -377,6 +400,15 @@ struct RigControlView: View {
           }
         }
         Spacer()
+        Picker(selection: $selectedCtcss, label: Text("CTCSS")) {
+          ForEach(ToneFreq.allCases) {
+            f in
+            Text(f.description).tag(f)
+          }
+        }.onChange(of: selectedCtcss) {
+          newValue in
+          radioModel.ctcss = newValue
+        }
       }
     }
     .buttonStyle(.bordered)
