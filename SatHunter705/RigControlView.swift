@@ -118,12 +118,12 @@ class RadioModel : ObservableObject {
   @Published var connectionState: ConnectionState = .NotConnected
   @Published var vfoAFreq: Int = 0
   @Published var vfoBFreq: Int = 0
-  var mode: Mode = .LSB {
+  var vfoAMode: Mode = .LSB {
     didSet {
       configRig()
     }
   }
-  var inverted: Bool = false {
+  var vfoBMode: Mode = .LSB {
     didSet {
       configRig()
     }
@@ -167,8 +167,8 @@ class RadioModel : ObservableObject {
       return
     }
     rig.enableSplit()
-    rig.setVfoAMode(mode)
-    rig.setVfoBMode(inverted ? mode.inverted() : mode)
+    rig.setVfoAMode(vfoAMode)
+    rig.setVfoBMode(vfoBMode)
   }
   
   func stopTracking() {
@@ -177,7 +177,7 @@ class RadioModel : ObservableObject {
     }
     timer = nil
   }
-  
+   
   private func syncFreq() {
     if connectionState != .Connected {
       return
@@ -197,8 +197,8 @@ struct RigControlView: View {
   @Binding var trackedSat: Satellite?
   @State private var downlinkFreqStr = "144.000"
   @State private var uplinkFreqStr = "440.000"
-  @State private var selectedMode: Mode = .LSB
-  @State private var isInverted: Bool = false
+  @State private var selectedVfoAMode: Mode = .LSB
+  @State private var selectedVfoBMode: Mode = .LSB
   @FocusState private var uplinkFreqInFocus: Bool
   @FocusState private var downlinkFreqInFocus: Bool
   @ObservedObject var dopplerShiftModel = DopplerShiftModel()
@@ -208,6 +208,7 @@ struct RigControlView: View {
 
   var body: some View {
     VStack {
+      // TODO: Generalize this "section header" UI component.
       ZStack {
         Rectangle().fill(.blue).opacity(0.3)
         HStack {
@@ -269,7 +270,14 @@ struct RigControlView: View {
             }
           }
           Button("Set") {
-            
+            guard let trackedSat else {
+              return
+            }
+            guard transponderIdx >= 0 && transponderIdx < trackedSat
+              .transponders.count else {
+              return
+            }
+            setTransponder(trackedSat.transponders[transponderIdx])
           }
         }
         Spacer()
@@ -283,25 +291,28 @@ struct RigControlView: View {
         }
       }
       HStack {
-        Picker(selection: $selectedMode, label: Text("Mode")) {
+        Image(systemName: "arrow.down")
+        Picker(selection: $selectedVfoAMode, label: Text("VFO A Mode")) {
           Text("LSB").tag(Mode.LSB)
           Text("USB").tag(Mode.USB)
           Text("FM").tag(Mode.FM)
         }
         .pickerStyle(.segmented)
-        .onChange(of: selectedMode) {
+        .onChange(of: selectedVfoAMode) {
           _ in
-          radioModel.mode = selectedMode
+          radioModel.vfoAMode = selectedVfoAMode
         }
         Divider()
-        Toggle(isOn: $isInverted) {
-          Text("Inverted")
+        Image(systemName: "arrow.up")
+        Picker(selection: $selectedVfoBMode, label: Text("VFO B Mode")) {
+          Text("LSB").tag(Mode.LSB)
+          Text("USB").tag(Mode.USB)
+          Text("FM").tag(Mode.FM)
         }
-        .toggleStyle(.button)
-        .disabled(selectedMode == .FM)
-        .onChange(of: isInverted) {
+        .pickerStyle(.segmented)
+        .onChange(of: selectedVfoBMode) {
           _ in
-          radioModel.inverted = isInverted
+          radioModel.vfoBMode = selectedVfoBMode
         }
       }
       HStack {
@@ -351,14 +362,28 @@ struct RigControlView: View {
     .onAppear {
       dopplerShiftModel.trackedSatTle = trackedSat?.tleTuple
       radioModel.dopplerShiftModel = dopplerShiftModel
-      radioModel.mode = selectedMode
-      radioModel.inverted = isInverted
+      radioModel.vfoAMode = selectedVfoAMode
+      radioModel.vfoBMode = selectedVfoBMode
       setDownlinkFreq()
       setUplinkFreq()
     }
     .onDisappear {
       radioModel.disconnect()
     }
+  }
+ 
+  private func setTransponder(_ transponder: Transponder) {
+    dopplerShiftModel.downlinkFreq = transponder.downlinkCenterFreq
+    if let uplinkFreq = transponder.uplinkCenterFreq {
+      dopplerShiftModel.uplinkFreq = uplinkFreq
+    } else {
+      dopplerShiftModel.uplinkFreq = transponder.downlinkCenterFreq
+    }
+
+    selectedVfoAMode = transponder.downlinkMode.libPredictMode
+    selectedVfoBMode = transponder.uplinkMode.libPredictMode
+    downlinkFreqStr = String(format: "%07.03f", Double(dopplerShiftModel.downlinkFreq) / 1e6)
+    uplinkFreqStr = String(format: "%07.03f", Double(dopplerShiftModel.uplinkFreq) / 1e6)
   }
 
   private func getVfoAFreq() -> String {

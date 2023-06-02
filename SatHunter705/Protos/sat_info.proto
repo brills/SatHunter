@@ -6,6 +6,13 @@ message Tle {
 }
 
 message Transponder {
+  enum Mode {
+    UNKNOWN = 0;
+    LSB = 1;
+    USB = 2;
+    CW = 3;
+    FM = 4;
+  }
   optional string mode = 1;
   optional int64 downlink_freq_lower = 2;
   // {}_upper can be 0 which means the transponder does not have
@@ -14,6 +21,9 @@ message Transponder {
   optional int64 uplink_freq_lower = 4;
   optional int64 uplink_freq_upper = 5;
   optional string description = 6;
+  optional Mode downlink_mode = 7;
+  optional Mode uplink_mode = 8;
+  optional bool inverted = 9;
 }
 
 message Satellite {

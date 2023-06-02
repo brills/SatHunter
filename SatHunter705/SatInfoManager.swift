@@ -7,11 +7,66 @@
 
 import Foundation
 
+extension Transponder.Mode {
+  static func fromString(_ s: String?) -> Transponder.Mode {
+    guard let s = s else {
+      return .unknown
+    }
+    let normalized = s.lowercased().trimmingCharacters(in: .whitespaces)
+    switch normalized {
+    case "lsb":
+      return .lsb
+    case "usb":
+      return .usb
+    case "cw":
+      return .cw
+    case "fm":
+      return .fm
+    default:
+      return .unknown
+    }
+  }
+  var libPredictMode: Mode {
+    switch self {
+    case .lsb:
+      fallthrough
+    case .unknown:
+      fallthrough
+    case .cw:
+      return .LSB
+    case .usb:
+      return .USB
+    case .fm:
+      return .FM
+    }
+  }
+}
+
+extension Transponder {
+  var downlinkCenterFreq: Int {
+    if downlinkFreqUpper > downlinkFreqLower {
+      return Int((downlinkFreqLower + downlinkFreqUpper) / 2)
+    }
+    return Int(downlinkFreqLower)
+  }
+  
+  var uplinkCenterFreq: Int? {
+    guard uplinkFreqLower > 0 else {
+      return nil
+    }
+    if uplinkFreqUpper > uplinkFreqLower {
+      return Int((uplinkFreqLower + uplinkFreqUpper) / 2)
+    }
+    return Int(uplinkFreqLower)
+  }
+}
+
 class SatInfoManager {
   private let kInfoFileName = "sat_info.pbbin"
   var satellites: [Int: Satellite] = [:]
   
   init() {
+    _ = loadFromInternet()
     if !loadLocally() {
       _ = loadFromInternet()
     }
@@ -114,17 +169,18 @@ class SatInfoManager {
       if let uplinkLow = transponder["uplink_low"] as? Int {
         proto.uplinkFreqLower = Int64(uplinkLow)
       }
-      if let uplinkHigh = transponder["uplink_low"] as? Int {
+      if let uplinkHigh = transponder["uplink_high"] as? Int {
         proto.uplinkFreqUpper = Int64(uplinkHigh)
       }
       if let desc = transponder["description"] as? String {
         proto.description_p = desc
       }
-      if var l = result[noradId] {
-        l.append(proto)
-      } else {
-        result[noradId] = [proto]
+      if let inverted = transponder["invert"] as? Bool {
+        proto.inverted = inverted
       }
+      proto.downlinkMode = .fromString(transponder["mode"] as? String)
+      proto.uplinkMode = .fromString(transponder["uplink_mode"] as? String)
+      result[noradId, default: []].append(proto)
     }
     return result
   }
