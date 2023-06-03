@@ -14,6 +14,6 @@ struct TrackingView: View {
       RigControlView(trackedSat: Binding<Satellite?>($satellite))
       SatView(trackedSat: Binding<Satellite?>($satellite))
       .ignoresSafeArea(.keyboard)
-    }
+    }.navigationTitle("SatHunter")
   }
 }

@@ -7,11 +7,33 @@
 
 import SwiftUI
 
+func getBtId(requestNew: Bool = false) -> UUID {
+  if let stored = UserDefaults.standard.string(forKey: "BTID") {
+    if let uuid = UUID(uuidString: stored) {
+      if !requestNew {
+        return uuid
+      }
+    }
+  }
+  let new = UUID()
+  UserDefaults.standard.set(new.uuidString, forKey: "BTID")
+  return new
+}
+
+func getShowOnlySatsWithUplink() -> Bool {
+  UserDefaults.standard.bool(forKey: "showOnlySatsWithUplink")
+}
+
+func setShowOnlySatsWithUplink(_ v: Bool) {
+  UserDefaults.standard.setValue(v, forKey: "showOnlySatsWithUplink")
+}
+
 struct SettingsView: View {
   @State var isLoading: Bool = false
   @State var lastTleLoadTime: Date? = SatInfoManager(
     onlyLoadLocally: true).lastUpdated
   @State var btId: UUID = getBtId(requestNew: false)
+  @State var showOnlySatsWithUplink: Bool = getShowOnlySatsWithUplink()
   var body: some View {
     ZStack {
       List {
@@ -53,10 +75,16 @@ struct SettingsView: View {
         }, footer: {
           Text(
             "SatHunter705 downloads TLE and transponder information " +
-            "from the Internet. Use the latest orbit elements for the " +
-            "most accurate predictions."
+              "from the Internet. Use the latest orbit elements for the " +
+              "most accurate predictions."
           )
-          })
+        })
+        Section {
+          Toggle("Show only satellites with an uplink", isOn: $showOnlySatsWithUplink).onChange(of: showOnlySatsWithUplink) {
+            newValue in
+            setShowOnlySatsWithUplink(newValue)
+          }
+        }
       }
       .navigationTitle("Settings")
     }.disabled(isLoading)

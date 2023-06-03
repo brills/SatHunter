@@ -9,25 +9,12 @@ import CoreBluetooth
 import Foundation
 import OSLog
 
-fileprivate let logger = Logger()
-fileprivate let kMyUUID = UUID(uuidString: "D91B0B94-C3C4-4540-8234-5BA06D25AA4F")!
-fileprivate let k705BtleControlService =
+private let logger = Logger()
+// fileprivate let kMyUUID = UUID(uuidString: "D91B0B94-C3C4-4540-8234-5BA06D25AA4F")!
+private let k705BtleControlService =
   CBUUID(string: "14CF8001-1EC2-D408-1B04-2EB270F14203")
-fileprivate let k705BtleServiceChar =
+private let k705BtleServiceChar =
   CBUUID(string: "14CF8002-1EC2-D408-1B04-2EB270F14203")
-
-public func getBtId(requestNew: Bool = false) -> UUID {
-  if let stored = UserDefaults.standard.string(forKey: "BTID") {
-    if let uuid = UUID(uuidString: stored) {
-      if !requestNew {
-        return uuid
-      }
-    }
-  }
-  let new = UUID()
-  UserDefaults.standard.set(new.uuidString, forKey: "BTID")
-  return new
-}
 
 public enum Mode {
   case LSB
@@ -44,7 +31,7 @@ public enum Mode {
       return 0x01
     }
   }
-  
+
   func inverted() -> Mode {
     switch self {
     case .FM:
@@ -59,19 +46,19 @@ public enum Mode {
 
 public enum ToneFreq: Int, CaseIterable, Identifiable {
   public var id: Int {
-    self.rawValue
+    rawValue
   }
-  
+
   case NotSet = 0
   case F67 = 670
   case F88_5 = 885
   case F141_3 = 1413
-  
+
   var description: String {
     if self == .NotSet {
       return "No CTCSS"
     }
-    return .init(format: "%5.01f", Double(self.rawValue) / 10)
+    return .init(format: "%5.01f", Double(rawValue) / 10)
   }
 }
 
@@ -102,9 +89,9 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
     ctlChar = nil
     super.init()
   }
-  
+
   // CBCentralManagerDelegate methods
-  
+
   func centralManagerDidUpdateState(_ central: CBCentralManager) {
     if central.state == .poweredOn {
       central.scanForPeripherals(withServices: [k705BtleControlService])
@@ -113,7 +100,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
       ic705 = nil
     }
   }
-  
+
   func centralManager(
     _ central: CBCentralManager,
     didDiscover peripheral: CBPeripheral,
@@ -133,14 +120,14 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
       }
     }
   }
-  
+
   func centralManager(_: CBCentralManager,
                       didConnect peripheral: CBPeripheral)
   {
     logger.info("Connected!")
     peripheral.discoverServices([k705BtleControlService])
   }
-  
+
   // CBPeripheralDelegate methods
   func peripheral(
     _ peripheral: CBPeripheral,
@@ -156,7 +143,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
       peripheral.setNotifyValue(true, for: char)
     }
   }
-  
+
   func peripheral(
     _ peripheral: CBPeripheral,
     didDiscoverServices error: Error?
@@ -172,7 +159,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
       }
     }
   }
-  
+
   func peripheral(
     _ peripheral: CBPeripheral,
     didUpdateNotificationStateFor characteristic: CBCharacteristic,
@@ -197,7 +184,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
     )
     state = .ID_SENT
   }
-  
+
   func peripheral(
     _ peripheral: CBPeripheral,
     didWriteValueFor char: CBCharacteristic,
@@ -245,7 +232,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
       logger.error("Invalid state")
     }
   }
-  
+
   func peripheral(
     _: CBPeripheral,
     didUpdateValueFor characteristic: CBCharacteristic,
@@ -258,23 +245,25 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
       }
       let resp = characteristic.value!
       if resp.count < 5 || !resp[0 ... 3]
-        .elementsEqual([0xFE, 0xFE, 0xE0, 0xA4]) || resp.last != 0xFD {
+        .elementsEqual([0xFE, 0xFE, 0xE0, 0xA4]) || resp.last != 0xFD
+      {
         // This packet is not addressed to us, or it's malformed. Ignore.
         return
       }
       switch resp[4] {
-        // This is the response to our query of VFO.
+      // This is the response to our query of VFO.
       case 0x25:
         if resp[5] == 0 {
-          rigStateObserver?.observe(vfoAFreq: fromBCD(resp[6...10]))
+          rigStateObserver?.observe(vfoAFreq: fromBCD(resp[6 ... 10]))
         } else if resp[5] == 1 {
-          rigStateObserver?.observe(vfoBFreq: fromBCD(resp[6...10]))
+          rigStateObserver?.observe(vfoBFreq: fromBCD(resp[6 ... 10]))
         }
       default:
         return
       }
     }
   }
+
   // Public interfaces
   // non-blocking and there is no response. No guarantee that the packet
   // will be received.
@@ -313,7 +302,7 @@ private class Ic705BtDelegate: NSObject, CBCentralManagerDelegate,
 
   var rigStateObserver: RigStateObserver?
   var ic705: CBPeripheral?
-  
+
   private var state: State
   private var waitForStartSema: DispatchSemaphore?
   private var ctlChar: CBCharacteristic?
@@ -328,39 +317,38 @@ private func chainBytes(_ bs: [UInt8]...) -> [UInt8] {
   }
   return result
 }
-public enum RigError : Error {
+
+public enum RigError: Error {
   case MalformedResponseError
   case TryAgainError
 }
 
 public class MyIc705: Rig, RigStateObserver {
- 
-  public init() {
-  }
-  
+  public init() {}
+
   func observe(vfoAFreq: Int) {
     rigStateMu.wait()
     rigState.vfoAFreq = vfoAFreq
     rigStateMu.signal()
   }
-  
+
   func observe(vfoBFreq: Int) {
     rigStateMu.wait()
     rigState.vfoBFreq = vfoBFreq
     rigStateMu.signal()
   }
-  
+
   func observe(connected _: Bool) {
-    self.connectCompletion?()
+    connectCompletion?()
   }
 
   public func connect(completion: @escaping () -> Void) {
-    self.connectCompletion = completion
+    connectCompletion = completion
     btDelegate = Ic705BtDelegate()
     btDelegate!.rigStateObserver = self
-    btMgr = CBCentralManager(delegate: btDelegate, queue: .global())
+    btMgr = CBCentralManager(delegate: btDelegate, queue: btQueue)
   }
-  
+
   public func disconnect() {
     if let p = btDelegate?.ic705 {
       btMgr?.cancelPeripheralConnection(p)
@@ -384,12 +372,14 @@ public class MyIc705: Rig, RigStateObserver {
   }
 
   public func setVfoAFreq(_ f: Int) {
+    guard f > 0 else { return }
     btDelegate?.sendPacket(.init(
       chainBytes(kCivPreamble, [0x25, 0x00], toBCD(f), [0xFD])
     ))
   }
 
   public func setVfoBFreq(_ f: Int) {
+    guard f > 0 else { return }
     btDelegate?.sendPacket(.init(
       chainBytes(kCivPreamble, [0x25, 0x01], toBCD(f), [0xFD])
     ))
@@ -412,21 +402,21 @@ public class MyIc705: Rig, RigStateObserver {
       chainBytes(kCivPreamble, [0x26, 0x01, m.toCivByte(), 00, 0xFD])
     ))
   }
-  
+
   public func enableVfoARepeaterTone(_ b: Bool) {
     let enableByte: UInt8 = b ? 0x01 : 0x00
-     btDelegate?.sendPacket(.init(
+    btDelegate?.sendPacket(.init(
       chainBytes(kCivPreamble, [0x16, 0x42, enableByte, 0xFD])
     ))
   }
-  
+
   public func selectVfo(_ vfoA: Bool) {
-    let selectionByte: UInt8 = vfoA ? 0x00: 0x01
-     btDelegate?.sendPacket(.init(
+    let selectionByte: UInt8 = vfoA ? 0x00 : 0x01
+    btDelegate?.sendPacket(.init(
       chainBytes(kCivPreamble, [0x07, selectionByte, 0xFD])
     ))
   }
-  
+
   public func setVfoAToneFreq(_ toneFreq: ToneFreq) {
     var b1: UInt8 = 0
     var b2: UInt8 = 0
@@ -443,19 +433,21 @@ public class MyIc705: Rig, RigStateObserver {
     ))
   }
 
-  private var btDelegate: Ic705BtDelegate? = nil
-  private var btMgr: CBCentralManager? = nil
-  private var connectCompletion: (() -> Void)? = nil
-  
+  private var btDelegate: Ic705BtDelegate?
+  private var btMgr: CBCentralManager?
+  private var connectCompletion: (() -> Void)?
+  private var btQueue = DispatchQueue(label: "rig_bt")
+
   private struct RigState {
     var vfoAFreq: Int = 0
     var vfoBFreq: Int = 0
   }
+
   private var rigState = RigState()
   private var rigStateMu = DispatchSemaphore(value: 1)
 }
 
-fileprivate func toBCD(_ v: Int) -> [UInt8] {
+private func toBCD(_ v: Int) -> [UInt8] {
   if v >= 1_000_000_000 {
     logger.error("Unable to convert \(v) to BCD. Overflow.")
   }
@@ -473,11 +465,11 @@ fileprivate func toBCD(_ v: Int) -> [UInt8] {
   return result
 }
 
-fileprivate func fromBCD<S: Sequence>(_ s: S) -> Int where S.Element == UInt8 {
-  var result: Int = 0
-  var scale: Int = 1
+private func fromBCD<S: Sequence>(_ s: S) -> Int where S.Element == UInt8 {
+  var result = 0
+  var scale = 1
   for b in s {
-    result += (Int(b) & 0x0f) * scale
+    result += (Int(b) & 0x0F) * scale
     scale *= 10
     result += (Int(b) >> 4) * scale
     scale *= 10

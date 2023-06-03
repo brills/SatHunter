@@ -33,6 +33,12 @@ extension Satellite {
   }
 }
 
+extension Satellite {
+  var hasUplink: Bool {
+    transponders.contains(where: {t in t.hasUplinkFreqLower })
+  }
+}
+
 class SatListStore: NSObject, ObservableObject, CLLocationManagerDelegate {
   @Published var sats = [SatListItem]()
   @Published var lastLoadedAt: Date? = nil
@@ -66,7 +72,9 @@ class SatListStore: NSObject, ObservableObject, CLLocationManagerDelegate {
     for sat in satInfoManager!.satellites.values {
       let tle = sat.tleTuple
       let orbit = SatOrbitElements(tle)
-      let satName = sat.name
+      if getShowOnlySatsWithUplink() && !sat.hasUplink {
+        continue
+      }
       if case .success(let observation) = getSatObservation(observer: observer, orbit: orbit) {
         let visible = observation.elevation > 0
         var item = SatListItem(satellite: sat, visible: visible)
