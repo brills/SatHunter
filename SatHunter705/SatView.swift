@@ -40,6 +40,7 @@ class SatViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
   @Published var userLat: Double = 0
   @Published var userLon: Double = 0
   @Published var userAlt: Double = 0
+  @Published var userGridSquare: String = ""
   
   private var timer: Timer? = nil
   private var locationManager: CLLocationManager? = nil
@@ -70,6 +71,7 @@ class SatViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
       userLon = location.coordinate.longitude
       userLat = location.coordinate.latitude
       observer = SatObserver(name: "user", lat: userLat, lon: userLon, alt: userAlt)
+      userGridSquare = latLonToGridSquare(lat: userLat, lon: userLon)
     }
   }
 
@@ -100,6 +102,23 @@ func azElToXy(az: Double, el: Double) -> (Double, Double) {
   r = max(0, r)
   r = min(1, r)
   return (r * sin(az.rad), r * cos(az.rad))
+}
+
+func latLonToGridSquare(lat: Double, lon: Double) -> String {
+  var lon = lon + 180
+  var lat = lat + 90
+  var result = ""
+  var lonBand = floor(lon / 20)
+  var latBand = floor(lat / 10)
+  result.append(Character(UnicodeScalar((UInt8(lonBand) + Character("A").asciiValue!))))
+  result.append(Character(UnicodeScalar((UInt8(latBand) + Character("A").asciiValue!))))
+  lon -= lonBand * 20
+  lat -= latBand * 10
+  lonBand = lon / 2
+  latBand = lat
+  result.append(Character(UnicodeScalar((UInt8(lonBand) + Character("0").asciiValue!))))
+  result.append(Character(UnicodeScalar((UInt8(latBand) + Character("0").asciiValue!))))
+  return result
 }
 
 struct SatView: View {
@@ -181,7 +200,7 @@ struct SatView: View {
                 )
               }
             } else {
-              Text("Next Pass")
+              Text("Next pass")
               HStack {
                 Text("AOS:")
                 Spacer()
@@ -198,11 +217,16 @@ struct SatView: View {
               }
               HStack {
                 Text(
-                  "Max El:"
+                  "Max el:"
                 )
                 Spacer()
                 Text("\(String(format: "%.0f", model.maxEl!)) deg")
               }
+            }
+            HStack {
+              Text("Your grid:")
+              Spacer()
+              Text(model.userGridSquare)
             }
             HStack {
               Text("Times are local").font(.footnote)

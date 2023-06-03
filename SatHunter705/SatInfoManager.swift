@@ -126,7 +126,7 @@ class SatInfoManager {
   }
   
   private func loadTle() -> [Int: (String, (String, String))]? {
-    let tleUrl = "https://celestrak.org/NORAD/elements/gp.php?GROUP=amateur&FORMAT=tle"
+    let tleUrl = "https://www.amsat.org/tle/current/dailytle.txt"
     guard let tleContents = try? String(contentsOf:URL(string: tleUrl)!) else {
       return nil
     }
