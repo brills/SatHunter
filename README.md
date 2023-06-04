@@ -60,3 +60,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+## Vendored third-party libraries
+
+- `libpredict`: https://github.com/la1k/libpredict .
+   See `libpredict/COPYING` for the license and `libpredict/LICENSE` for the licensing term.
+
