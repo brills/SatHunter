@@ -1,0 +1,6 @@
+## User settings
+SatHunter.xcodeproj/xcuserdata/
+
+## Xcode 8 and earlier
+SatHunter.xcodeproj/*.xcscmblueprint
+SatHunter.xcodeproj/*.xccheckout
