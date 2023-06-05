@@ -6,7 +6,7 @@ It provides aids for aiming the antenna at the satellite, and
 controls the IC-705 via bluetooth, adjusting the up/down frequencies
 automatically with doppler shifts.
 
-## Features:
+## Features
 
 - Simple control
     - Connect to your IC-705, select a satellite, select a transponder, then you only need
@@ -22,15 +22,13 @@ automatically with doppler shifts.
 - Updatable satellite and transponder database
 - Open source software
 
-## Quick start
+## Privacy
 
-TODO: link to App Store.
+This App requires access to location information (GPS coordinates and device heading) and
+Bluetooth.
 
-TODO: first-time instruction
-
-## Status and Road Map
-
-TODO: populate
+All the information acquired is only for computing the satellite orbit and doppler shift as well
+as controlling the IC-705. Nothing is shared with anyone.
 
 ## Contribution
 
