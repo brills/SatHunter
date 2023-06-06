@@ -80,6 +80,58 @@ What you may want to do:
 - Map your speaker-mic's Up / Down button to main VFO tuning. You may
   find it useful when working linear satellites.
 
+## Operating Guide
+
+### Connect to IC-705
+It's similar to the pairing process shown above. The connection persists
+across different satellite passes.
+
+### Satellite view
+
+#### Frequency display
+3 Groups of frequencies are shown in this view. They are annotated
+below.
+![SatView](SatView.jpeg)
+
+#### Tracking status
+The `Track/Tracking` toggle determines how SatHunter controls the radio.
+
+When `Tracking`, SatHunter tries to lock on the current frequencies
+at satellite -- it adjusts VFO A and B so that the numbers on the
+top-left side do not change.
+
+When not `Tracking`:
+
+- if a transponder is not selected, or the transponder is not a linear
+  transponder, SatHunter does not control the radio.
+- if a linear transponder is selected, SatHunter will control the VFO B
+  (uplink frequency) to "match" VFO A with
+  [Full Doppler Tuning](https://www.amsat.org/wordpress/wp-content/uploads/2015/02/FDT-WA4SCA.pdf).
+  Here's how it works:
+  - Periodically, SatHunter computes the ground frequencies of the
+    transponder's frequency range. Then it computes the difference
+    between VFO A and the (adjusted for ground) lower bound of the
+    transponder's downlink frequency. Then it applie the difference
+    on top of one of the transponder's uplink frequency bounds,
+    depending on whether the transponder is inverted.
+
+### Work FM Satellites
+
+Select the FM transponder. Tracking is automatically turned on. Enjoy.
+
+### Work Linear Satellites
+
+- Select the linear transponder. Tracking is automatically turned on and
+  the VFOs are set to the mid of the linear transponder's range.
+
+- Turn off tracking and tune VFO A (the main VFO knob) to look for
+  signal / a place to call CQ.
+    - If you have tuned out of the downlink frequency range of the
+      selected transponder, the radio frequency display will turn red.
+
+- Once you find a signal / frequency, turn on tracking to lock on that
+  signal. If the other side is also using Full Doppler Tuning, you
+  should be able to have a hassle-free QSO (in theory :D).
 
 ## Maintenance
 
