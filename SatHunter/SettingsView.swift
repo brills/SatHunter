@@ -39,6 +39,9 @@ struct SettingsView: View {
   var body: some View {
     ZStack {
       List {
+        Section {
+          Text("[Getting Started Guide](https://github.com/brills/SatHunter/blob/main/Docs/GettingStarted.md)")
+        }
         Section(content: {
           HStack {
             Text("Bluetooth ID")
