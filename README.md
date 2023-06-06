@@ -6,6 +6,8 @@ It provides aids for aiming the antenna at the satellite, and
 controls the IC-705 via bluetooth, adjusting the up/down frequencies
 automatically with doppler shifts.
 
+[Get it on App Store](https://apps.apple.com/us/app/sathunter/id6449915406).
+
 ## Features
 
 - Simple control
@@ -32,6 +34,13 @@ Bluetooth.
 
 All the information acquired is only for computing the satellite orbit and doppler shift as well
 as controlling the IC-705. Nothing is shared with anyone.
+
+## Tested Devices
+
+My only iPhone is an iPhone XR. So this is the only device I can physically
+test each release with. The xcode simulators do not have bluetooth support.
+
+The app currently only supports IC-705.
 
 ## Contribution
 
