@@ -22,6 +22,9 @@ automatically with doppler shifts.
 - Updatable satellite and transponder database
 - Open source software
 
+## Getting Started
+See the [guide](Docs/GettingStarted.md).
+
 ## Privacy
 
 This App requires access to location information (GPS coordinates and device heading) and
