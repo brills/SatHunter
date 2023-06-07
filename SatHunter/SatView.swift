@@ -115,10 +115,8 @@ func latLonToGridSquare(lat: Double, lon: Double) -> String {
 }
 
 struct SatView: View {
-//  @Binding var satName: String?
-//  @Binding var trackedSat: SatOrbitElements?
   @Binding var trackedSat: Satellite?
-  @ObservedObject var model = SatViewModel()
+  @StateObject var model = SatViewModel()
   
   var body: some View {
     HStack {

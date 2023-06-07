@@ -134,7 +134,7 @@ class SatListStore: NSObject, ObservableObject, CLLocationManagerDelegate {
 }
 
 struct SatListView : View {
-  @ObservedObject var store = SatListStore()
+  @StateObject var store = SatListStore()
   @State private var searchText: String = ""
   @EnvironmentObject private var rig: MyIc705
   

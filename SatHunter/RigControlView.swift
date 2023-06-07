@@ -372,8 +372,8 @@ struct RigControlView: View {
   @State private var selectedVfoAMode: Mode = .LSB
   @State private var selectedVfoBMode: Mode = .LSB
   @EnvironmentObject private var rig: MyIc705
-  @ObservedObject var dopplerShiftModel = DopplerShiftModel()
-  @ObservedObject var radioModel = RadioModel()
+  @StateObject var dopplerShiftModel = DopplerShiftModel()
+  @StateObject var radioModel = RadioModel()
   @State private var radioIsTracking: Bool = false
   @State private var transponderIdx: Int = -1
   @State private var selectedCtcss: ToneFreq = .NotSet
