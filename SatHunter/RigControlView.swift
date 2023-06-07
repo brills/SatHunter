@@ -216,10 +216,10 @@ class RadioModel: ObservableObject {
     }
   }
 
-  var rig: MyIc705? = nil
+  var rig: MyIc705?
   var dopplerShiftModel: DopplerShiftModel?
   var transponder: Transponder?
-  private var timer: Timer? = nil
+  private var timer: Timer?
   private var isTracking: Bool = false
 
   init() {}
@@ -368,7 +368,7 @@ class RadioModel: ObservableObject {
 }
 
 struct RigControlView: View {
-  @Binding var trackedSat: Satellite?
+  var trackedSat: Satellite
   @State private var selectedVfoAMode: Mode = .LSB
   @State private var selectedVfoBMode: Mode = .LSB
   @EnvironmentObject private var rig: MyIc705
@@ -407,22 +407,18 @@ struct RigControlView: View {
       }.font(.body.monospaced())
       HStack {
         Image(systemName: "antenna.radiowaves.left.and.right")
-        if trackedSat == nil {
-          Text("No transponder info available")
-        } else {
-          // Bug: the picker dropdown is redrawn as the doppler model refreshes
-          // causing glitches.
-          // https://developer.apple.com/forums/thread/127218
-          Picker("Transponder", selection: $transponderIdx) {
-            Text("Transponder not selected").tag(-1)
-            ForEach(trackedSat!.transponders.indices, id: \.self) {
-              i in
-              Text(trackedSat!.transponders[i].description_p)
-            }
-          }.onChange(of: transponderIdx) {
-            _ in
-            setTransponder()
+        // Bug: the picker dropdown is redrawn as the doppler model refreshes
+        // causing glitches.
+        // https://developer.apple.com/forums/thread/127218
+        Picker("Transponder", selection: $transponderIdx) {
+          Text("Transponder not selected").tag(-1)
+          ForEach(trackedSat.transponders.indices, id: \.self) {
+            i in
+            Text(trackedSat.transponders[i].description_p)
           }
+        }.onChange(of: transponderIdx) {
+          _ in
+          setTransponder()
         }
         Spacer()
       }
@@ -490,8 +486,7 @@ struct RigControlView: View {
           Text(radioIsTracking ? "Tracking" : "Track")
         }
         .toggleStyle(.button)
-        .disabled(rig
-          .connectionState != .Connected || trackedSat == nil)
+        .disabled(rig.connectionState != .Connected)
         .onChange(of: radioIsTracking) {
           newValue in
           if newValue {
@@ -515,7 +510,7 @@ struct RigControlView: View {
     .buttonStyle(.bordered)
     .fixedSize(horizontal: false, vertical: true)
     .onAppear {
-      dopplerShiftModel.trackedSatTle = trackedSat?.tleTuple
+      dopplerShiftModel.trackedSatTle = trackedSat.tleTuple
       dopplerShiftModel.startLoop()
       radioModel.rig = rig
       radioModel.dopplerShiftModel = dopplerShiftModel
@@ -523,17 +518,15 @@ struct RigControlView: View {
       radioModel.vfoBMode = selectedVfoBMode
       radioModel.startLoop()
     }
-    .onDisappear() {
+    .onDisappear {
       radioModel.stopLoop()
     }
   }
 
   private func setTransponder() {
     var transponder: Transponder?
-    if let sat = trackedSat {
-      if transponderIdx >= 0, transponderIdx < sat.transponders.count {
-        transponder = sat.transponders[transponderIdx]
-      }
+    if transponderIdx >= 0, transponderIdx < trackedSat.transponders.count {
+      transponder = trackedSat.transponders[transponderIdx]
     }
     dopplerShiftModel.stopLoop()
     radioModel.stopLoop()

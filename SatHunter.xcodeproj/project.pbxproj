@@ -10,6 +10,9 @@
 		D12952402A28004D00334302 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = D129523F2A28004D00334302 /* SwiftProtobuf */; };
 		D12952422A28006800334302 /* sat_info.proto in Sources */ = {isa = PBXBuildFile; fileRef = D12952412A28006800334302 /* sat_info.proto */; };
 		D12952492A2806E600334302 /* SatInfoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12952482A2806E600334302 /* SatInfoManager.swift */; };
+		D13429B82A302A2B00184085 /* SkyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13429B72A302A2B00184085 /* SkyView.swift */; };
+		D19BE3462A302C6800DC47D1 /* SatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D19BE3452A302C6800DC47D1 /* SatViewModel.swift */; };
+		D19BE3482A302CD400DC47D1 /* SatInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D19BE3472A302CD400DC47D1 /* SatInfoView.swift */; };
 		D1A738752A230C69002832A1 /* sdp4.c in Sources */ = {isa = PBXBuildFile; fileRef = D1A738642A230C69002832A1 /* sdp4.c */; };
 		D1A738762A230C69002832A1 /* moon.c in Sources */ = {isa = PBXBuildFile; fileRef = D1A738652A230C69002832A1 /* moon.c */; };
 		D1A738782A230C69002832A1 /* orbit.c in Sources */ = {isa = PBXBuildFile; fileRef = D1A738682A230C69002832A1 /* orbit.c */; };
@@ -83,7 +86,10 @@
 /* Begin PBXFileReference section */
 		D12952412A28006800334302 /* sat_info.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = sat_info.proto; sourceTree = "<group>"; };
 		D12952482A2806E600334302 /* SatInfoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatInfoManager.swift; sourceTree = "<group>"; };
+		D13429B72A302A2B00184085 /* SkyView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SkyView.swift; sourceTree = "<group>"; };
 		D1403E342A2303ED000E873B /* libpredict.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = libpredict.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D19BE3452A302C6800DC47D1 /* SatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatViewModel.swift; sourceTree = "<group>"; };
+		D19BE3472A302CD400DC47D1 /* SatInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatInfoView.swift; sourceTree = "<group>"; };
 		D1A738642A230C69002832A1 /* sdp4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sdp4.c; sourceTree = "<group>"; };
 		D1A738652A230C69002832A1 /* moon.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = moon.c; sourceTree = "<group>"; };
 		D1A738672A230C69002832A1 /* predict.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = predict.h; sourceTree = "<group>"; };
@@ -208,6 +214,7 @@
 				D1A738852A230F81002832A1 /* LibPredict.swift */,
 				D1A7388E2A24235B002832A1 /* SatHunterApp.swift */,
 				D1A738902A24235B002832A1 /* TrackingView.swift */,
+				D13429B72A302A2B00184085 /* SkyView.swift */,
 				D1A738C52A25441D002832A1 /* RigControlView.swift */,
 				D1A738922A24235D002832A1 /* Assets.xcassets */,
 				D1A738942A24235D002832A1 /* Preview Content */,
@@ -215,6 +222,8 @@
 				D1A738C72A2550B6002832A1 /* SatView.swift */,
 				D12952482A2806E600334302 /* SatInfoManager.swift */,
 				D1F547902A29B15700AED698 /* SettingsView.swift */,
+				D19BE3452A302C6800DC47D1 /* SatViewModel.swift */,
+				D19BE3472A302CD400DC47D1 /* SatInfoView.swift */,
 			);
 			path = SatHunter;
 			sourceTree = "<group>";
@@ -369,6 +378,7 @@
 			files = (
 				D1A738912A24235B002832A1 /* TrackingView.swift in Sources */,
 				D12952422A28006800334302 /* sat_info.proto in Sources */,
+				D19BE3482A302CD400DC47D1 /* SatInfoView.swift in Sources */,
 				D1A738B62A242398002832A1 /* LibPredict.swift in Sources */,
 				D1A738C62A25441D002832A1 /* RigControlView.swift in Sources */,
 				D1A7388F2A24235B002832A1 /* SatHunterApp.swift in Sources */,
@@ -376,6 +386,8 @@
 				D12952492A2806E600334302 /* SatInfoManager.swift in Sources */,
 				D1A738C82A2550B6002832A1 /* SatView.swift in Sources */,
 				D1A738CA2A25A485002832A1 /* Rig.swift in Sources */,
+				D19BE3462A302C6800DC47D1 /* SatViewModel.swift in Sources */,
+				D13429B82A302A2B00184085 /* SkyView.swift in Sources */,
 				D1A738BE2A250C06002832A1 /* SatListView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
