@@ -7,5 +7,11 @@ struct TrackingView: View {
       RigControlView(trackedSat: satellite)
       SatView(trackedSat: satellite)
     }
+    .onAppear {
+      UIApplication.shared.isIdleTimerDisabled = true
+    }
+    .onDisappear {
+      UIApplication.shared.isIdleTimerDisabled = false
+    }
   }
 }
