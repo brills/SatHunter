@@ -5,8 +5,8 @@
 //  Created by Zhuo Peng on 6/6/23.
 //
 
-import SwiftUI
 import CoreLocation
+import SwiftUI
 
 struct SkyViewBg: View {
   var width: Double
@@ -98,6 +98,24 @@ struct SatTrack: View {
   }
 }
 
+struct UserHeadingIndicator: View {
+  var width: Double
+  var height: Double
+  @Binding var headingDeg: Double
+
+  var body: some View {
+    Path {
+      path in
+      path.move(to: .init(x: width / 2, y: height / 2))
+      let r = min(width, height) / 2
+      let heading = headingDeg.rad
+      let x = width / 2 + r * sin(heading)
+      let y = height / 2 - r * cos(heading)
+      path.addLine(to: .init(x: x, y: y))
+    }.stroke(.blue.opacity(0.4), lineWidth: 5)
+  }
+}
+
 extension Binding {
   func withDefault<T>(_ defaultValue: T) -> Binding<T> where Value == T? {
     return Binding<T>(get: {
@@ -120,7 +138,7 @@ struct SkyView: View {
           SatTrack(
             width: width,
             height: height,
-            points: .constant([])
+            points: $model.passTrack
           )
           SatMark(
             width: width,
@@ -129,6 +147,7 @@ struct SkyView: View {
             azDeg: $model.currentAz.withDefault(0),
             elDeg: $model.currentEl.withDefault(0)
           )
+          UserHeadingIndicator(width: width, height: height, headingDeg: $model.userHeading)
         }
       }
     }
@@ -143,13 +162,22 @@ struct SkyView_Previews: PreviewProvider {
         let height = g.size.height
         ZStack {
           SkyViewBg(width: width, height: height)
-          SatTrack(width: width, height: height, points: .constant([(135, 22), (270, 15)]))
+          SatTrack(
+            width: width,
+            height: height,
+            points: .constant([(135, 22), (270, 15), (345, 0)])
+          )
           SatMark(
             width: width,
             height: height,
             visible: .constant(true),
             azDeg: .constant(135),
             elDeg: .constant(22)
+          )
+          UserHeadingIndicator(
+            width: width,
+            height: height,
+            headingDeg: .constant(45.0)
           )
         }
       }

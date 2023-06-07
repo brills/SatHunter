@@ -39,6 +39,7 @@ class SatViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
   @Published var userLon: Double = 0
   @Published var userAlt: Double = 0
   @Published var userGridSquare: String = ""
+  @Published var passTrack: [(Double, Double)] = []
   
   private var timer: Timer? = nil
   private var locationManager: CLLocationManager? = nil
@@ -89,9 +90,25 @@ class SatViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
           nextLos = nextPass.los.date
           maxEl = nextPass.maxElevation.elevation.deg
         }
-        visible = observation.elevation > 0
+        let newVisible = observation.elevation > 0
+        if visible == nil || visible! != newVisible {
+          computePassTrack(newVisible)
+        }
+        visible = newVisible
       }
     }
+  }
+  
+  private func computePassTrack(_ isVisible: Bool) {
+    let startTime = isVisible ? Date.now : nextAos!
+    let endTime = isVisible ? currentLos! : nextLos!
+    var newPassTrack: [(Double, Double)] = []
+    for t in stride(from: startTime, through: endTime, by: 10) {
+      if case let .success(observation) = getSatObservation(observer: observer, orbit: trackedSat!, time: t) {
+        newPassTrack.append((observation.azimuth.deg, observation.elevation.deg))
+      }
+    }
+    passTrack = newPassTrack
   }
 }
 // az, el in degree
