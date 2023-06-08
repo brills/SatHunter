@@ -437,6 +437,7 @@ struct RigControlView: View {
             Text("LSB").tag(Mode.LSB)
             Text("USB").tag(Mode.USB)
             Text("FM").tag(Mode.FM)
+            Text("CW").tag(Mode.CW)
           }
           .pickerStyle(.segmented)
           .onChange(of: selectedVfoAMode) {
@@ -455,6 +456,7 @@ struct RigControlView: View {
             Text("LSB").tag(Mode.LSB)
             Text("USB").tag(Mode.USB)
             Text("FM").tag(Mode.FM)
+            Text("CW").tag(Mode.CW)
           }
           .pickerStyle(.segmented)
           .onChange(of: selectedVfoBMode) {

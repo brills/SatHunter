@@ -26,7 +26,7 @@ extension Transponder.Mode {
     case .unknown:
       fallthrough
     case .cw:
-      return .LSB
+      return .CW
     case .usb:
       return .USB
     case .fm:

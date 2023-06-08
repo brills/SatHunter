@@ -1,3 +1,7 @@
+# Next
+
+- Added CW to available modes. When selecting a CW beacon the CW mode is actiated.
+
 # 1.0.2 App Store release
 
 - Prevent screen from dimming or locking when showing the tracking view.

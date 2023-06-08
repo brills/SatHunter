@@ -20,6 +20,7 @@ public enum Mode {
   case LSB
   case USB
   case FM
+  case CW
 
   func toCivByte() -> UInt8 {
     switch self {
@@ -29,6 +30,8 @@ public enum Mode {
       return 0x00
     case .USB:
       return 0x01
+    case .CW:
+      return 0x03
     }
   }
 
@@ -40,6 +43,8 @@ public enum Mode {
       return .LSB
     case .LSB:
       return .USB
+    case .CW:
+      return .CW
     }
   }
 }
