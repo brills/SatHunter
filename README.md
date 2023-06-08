@@ -27,6 +27,20 @@ automatically with doppler shifts.
 ## Getting Started
 See the [guide](Docs/GettingStarted.md).
 
+## Roadmap
+
+- Test in field how well IC-705 can work a linear satellite in half-duplex.
+  - The main challenge is going to be the drift in the LO on the satellite. If we can 
+    identify that to be the case, we may be able to measure the drift by tuning
+    exactly to the beacon of the satellite. If we are able to measure it, we will
+    be able to compensate it.
+- CW support. IC-705 CI-V supports sending CW. The challenge is to design a UI flow
+  that would allow simple CW QSO, given that users may not have both of their hands
+  available.
+- Basic logging support. IC-705 can record QSOs, but sometimes it can be difficult
+  to recall via which satellite was a QSO done. A simple log button that saves the
+  current time, current satellite, current frequencies would be helpful.
+
 ## Privacy
 
 This App requires access to location information (GPS coordinates and device heading) and
