@@ -6,8 +6,8 @@ class DopplerShiftModel: NSObject, ObservableObject, CLLocationManagerDelegate {
   @Published var actualUplinkFreq: Int? = nil
   @Published var downlinkFreq: Int = 0
   @Published var uplinkFreq: Int = 0
-  var transponderDownlinkShift: Int?
-  var transponderUplinkShift: Int?
+  @Published var transponderDownlinkShift: Int?
+  @Published var transponderUplinkShift: Int?
   var transponder: Transponder?
   private var orbit: SatOrbitElements?
   var trackedSatTle: (String, String)? {
@@ -192,6 +192,10 @@ extension Int {
   var asFormattedFreq: String {
     String(format: "%010.06f", Double(self) / 1e6)
   }
+
+  var asShortFormattedFreq: String {
+    String(format: "%07.03f", Double(self) / 1e6)
+  }
 }
 
 class RadioModel: ObservableObject {
@@ -367,6 +371,82 @@ class RadioModel: ObservableObject {
   }
 }
 
+// The picker has to be in its own view because its parent is redrawn too
+// frequently due to the periodic update.
+// https://developer.apple.com/forums/thread/127218
+struct TransponderPicker : View {
+  @Binding var transponderIdx: Int
+  var trackedSat: Satellite
+  var body: some View {
+    HStack {
+      Image(systemName: "antenna.radiowaves.left.and.right")
+      Picker("Transponder", selection: $transponderIdx) {
+        Text("Transponder not selected").tag(-1)
+        ForEach(trackedSat.transponders.indices, id: \.self) {
+          i in
+          Text(trackedSat.transponders[i].description_p)
+        }
+      }
+    }
+  }
+}
+
+struct TransponderView : View {
+  @Binding var transponderIdx: Int
+  @Binding var transponderUplinkShift: Int?
+  @Binding var transponderDownlinkShift: Int?
+  var trackedSat: Satellite
+  var body: some View {
+    HStack {
+      TransponderPicker(transponderIdx: $transponderIdx, trackedSat: trackedSat)
+      // Only show doppler corrected freq range when the transponder has one.
+      if transponderIdx >= 0 &&
+         trackedSat.transponders[transponderIdx].downlinkFreqUpper > 0 &&
+         trackedSat.transponders[transponderIdx].uplinkFreqLower > 0 &&
+         trackedSat.transponders[transponderIdx].uplinkFreqUpper > 0 {
+        VStack {
+          HStack {
+            Image(systemName: "arrow.down")
+            Text(getShiftedFreq(
+              baseFreq: trackedSat.transponders[transponderIdx]
+                .downlinkFreqLower,
+              shift: transponderDownlinkShift
+            ))
+            Text("-")
+            Text(getShiftedFreq(
+              baseFreq: trackedSat.transponders[transponderIdx]
+                .downlinkFreqUpper,
+              shift: transponderDownlinkShift
+            ))
+          }
+          HStack {
+            Image(systemName: "arrow.up")
+            Text(getShiftedFreq(
+              baseFreq: trackedSat.transponders[transponderIdx]
+                .uplinkFreqLower,
+              shift: transponderUplinkShift
+            ))
+            Text("-")
+            Text(getShiftedFreq(
+              baseFreq: trackedSat.transponders[transponderIdx]
+                .uplinkFreqUpper,
+              shift: transponderUplinkShift
+            ))
+          }
+        }.font(.footnote.monospaced())
+      }
+      Spacer()
+    }
+  }
+
+  private func getShiftedFreq(baseFreq: Int64, shift: Int?) -> String {
+    if let shift = shift {
+      return (Int(baseFreq) + shift).asShortFormattedFreq
+    }
+    return Int(baseFreq).asShortFormattedFreq
+  }
+}
+
 struct RigControlView: View {
   var trackedSat: Satellite
   @State private var selectedVfoAMode: Mode = .LSB
@@ -389,39 +469,18 @@ struct RigControlView: View {
           Spacer()
         }
       }
-      HStack {
-        Image(systemName: "arrow.down")
-        Text(dopplerShiftModel.downlinkFreq.asFormattedFreq)
-        Divider()
-        Image(systemName: "dot.radiowaves.forward")
-        Text(getActualDownlinkFreq())
-          .frame(maxHeight: .infinity)
-      }.font(.body.monospaced())
-      HStack {
-        Image(systemName: "arrow.up")
-        Text(dopplerShiftModel.uplinkFreq.asFormattedFreq)
-        Divider()
-        Image(systemName: "dot.radiowaves.forward")
-        Text(getActualUplinkFreq())
-          .frame(maxHeight: .infinity)
-      }.font(.body.monospaced())
-      HStack {
-        Image(systemName: "antenna.radiowaves.left.and.right")
-        // Bug: the picker dropdown is redrawn as the doppler model refreshes
-        // causing glitches.
-        // https://developer.apple.com/forums/thread/127218
-        Picker("Transponder", selection: $transponderIdx) {
-          Text("Transponder not selected").tag(-1)
-          ForEach(trackedSat.transponders.indices, id: \.self) {
-            i in
-            Text(trackedSat.transponders[i].description_p)
-          }
-        }.onChange(of: transponderIdx) {
-          _ in
-          setTransponder()
-        }
-        Spacer()
-      }
+      SatFreqView(
+        downlinkFreqAtSat: $dopplerShiftModel.downlinkFreq,
+        uplinkFreqAtSat: $dopplerShiftModel.uplinkFreq,
+        downlinkFreqAtGround: $dopplerShiftModel.actualDownlinkFreq,
+        uplinkFreqAtGround: $dopplerShiftModel.actualUplinkFreq
+      )
+      TransponderView(
+        transponderIdx: $transponderIdx,
+        transponderUplinkShift: $dopplerShiftModel.transponderUplinkShift,
+        transponderDownlinkShift: $dopplerShiftModel.transponderDownlinkShift,
+        trackedSat: trackedSat)
+        .onChange(of: transponderIdx, perform: { _ in setTransponder()} )
       ZStack {
         Rectangle().fill(.blue).opacity(0.3)
         HStack {

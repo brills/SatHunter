@@ -1,6 +1,8 @@
 # Next
 
 - Added CW to available modes. When selecting a CW beacon the CW mode is actiated.
+- Fixed a bug that causes the transponder picker to flicker.
+- Display doppler adjusted frequency range when the transponder is ranged.
 
 # 1.0.2 App Store release
 
