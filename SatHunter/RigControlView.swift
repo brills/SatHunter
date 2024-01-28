@@ -386,7 +386,7 @@ struct TransponderPicker : View {
           i in
           Text(trackedSat.transponders[i].description_p)
         }
-      }
+      }.pickerStyle(.navigationLink)
     }
   }
 }
