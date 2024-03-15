@@ -10,7 +10,6 @@ import Foundation
 import OSLog
 
 private let logger = Logger()
-// fileprivate let kMyUUID = UUID(uuidString: "D91B0B94-C3C4-4540-8234-5BA06D25AA4F")!
 private let k705BtleControlService =
   CBUUID(string: "14CF8001-1EC2-D408-1B04-2EB270F14203")
 private let k705BtleServiceChar =

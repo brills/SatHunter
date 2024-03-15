@@ -34,8 +34,8 @@
 		D1A738932A24235D002832A1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D1A738922A24235D002832A1 /* Assets.xcassets */; };
 		D1A738962A24235D002832A1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D1A738952A24235D002832A1 /* Preview Assets.xcassets */; };
 		D1A738B62A242398002832A1 /* LibPredict.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738852A230F81002832A1 /* LibPredict.swift */; };
-		D1A738B72A242434002832A1 /* libpredict.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D1403E342A2303ED000E873B /* libpredict.framework */; };
-		D1A738B82A242434002832A1 /* libpredict.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D1403E342A2303ED000E873B /* libpredict.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D1A738B72A242434002832A1 /* libpredict.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D1403E342A2303ED000E873B /* libpredict.framework */; platformFilter = ios; };
+		D1A738B82A242434002832A1 /* libpredict.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D1403E342A2303ED000E873B /* libpredict.framework */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D1A738BE2A250C06002832A1 /* SatListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738BD2A250C06002832A1 /* SatListView.swift */; };
 		D1A738C62A25441D002832A1 /* RigControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738C52A25441D002832A1 /* RigControlView.swift */; };
 		D1A738C82A2550B6002832A1 /* SatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738C72A2550B6002832A1 /* SatView.swift */; };
@@ -401,6 +401,7 @@
 /* Begin PBXTargetDependency section */
 		D1A738BA2A242434002832A1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilter = ios;
 			target = D1403E332A2303ED000E873B /* libpredict */;
 			targetProxy = D1A738B92A242434002832A1 /* PBXContainerItemProxy */;
 		};
@@ -674,7 +675,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -689,7 +690,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = $SRCROOT/libpredict/predict/predict.h;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -761,7 +762,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = sealscript.net.SatHunter;
@@ -775,7 +776,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = $SRCROOT/libpredict/predict/predict.h;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
