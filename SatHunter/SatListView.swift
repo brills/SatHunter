@@ -2,24 +2,6 @@ import Foundation
 import CoreLocation
 import SwiftUI
 
-struct SatListItem: Identifiable, Sendable {
-  var satellite: Satellite
-  var visible: Bool
-  // visible == true
-  var los: Date?
-  
-  // visible = false
-  var nextAos: Date?
-  var nextLos: Date?
-  var maxEl: Double?
-  
-  var id: Int {
-    get {
-      Int(satellite.noradID)
-    }
-  }
-}
-
 extension Satellite {
   var tleTuple: (String, String) {
     (self.tle.line1, self.tle.line2)
@@ -36,6 +18,7 @@ extension Satellite {
   var hasUplink: Bool {
     transponders.contains(where: {t in t.hasUplinkFreqLower })
   }
+    
   var hasActiveUVTransponder: Bool {
     transponders.contains(where: {
       t in
@@ -56,10 +39,12 @@ extension Satellite {
   }
 }
 
-class SatListStore: NSObject, ObservableObject, CLLocationManagerDelegate {
-  @Published var sats = [SatListItem]()
-  @Published var lastLoadedAt: Date? = nil
-  private var observer = SatObserver(name: "user", lat: 37.33481435508938, lon:-122.00893980785605, alt: 25)
+class SatellitesListStore: NSObject, ObservableObject, CLLocationManagerDelegate {
+  
+  @Published var satellites = [SatelliteListItem]()
+  @Published var lastUpdateTime: Date? = nil
+  
+  private var observer = SatelliteObserver(name: "user", latitudeDegrees: 37.33481435508938, longitudeDegrees:-122.00893980785605, altitude: 25)
   private var locationManager: CLLocationManager? = nil
   private var satInfoManager: SatInfoManager? = nil
   
@@ -74,40 +59,48 @@ class SatListStore: NSObject, ObservableObject, CLLocationManagerDelegate {
    
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
     if let location = locations.last {
-      let userAlt = location.altitude
-      let userLon = location.coordinate.longitude
-      let userLat = location.coordinate.latitude
-      observer = SatObserver(name: "user", lat: userLat, lon: userLon, alt: userAlt)
+      let userAltitude = location.altitude
+      let userLongitude = location.coordinate.longitude
+      let userLatitude = location.coordinate.latitude
+      observer = SatelliteObserver(name: "user", latitudeDegrees: userLatitude, longitudeDegrees: userLongitude, altitude: userAltitude)
     }
   }
   
   func load(searchText: String? = nil) async {
+    
     if satInfoManager == nil {
       satInfoManager = .init()
     }
-    var result: [SatListItem] = []
+      
+    var result: [SatelliteListItem] = []
     let showOnlySatsWithUplink = getShowOnlySatsWithUplink()
     let showOnlyUVActiveSats = getShowUVActiveSatsOnly()
-    for sat in satInfoManager!.satellites.values {
-      let tle = sat.tleTuple
-      let orbit = SatOrbitElements(tle)
-      if showOnlySatsWithUplink && !sat.hasUplink {
+      
+    for satellite in satInfoManager!.satellites.values {
+      let tle = satellite.tleTuple
+      let orbit = SatelliteOrbitElements(tle)
+        
+      if showOnlySatsWithUplink && !satellite.hasUplink {
         continue
       }
-      if showOnlyUVActiveSats && !sat.hasActiveUVTransponder {
+        
+      if showOnlyUVActiveSats && !satellite.hasActiveUVTransponder {
         continue
       }
-      if case .success(let observation) = getSatObservation(observer: observer, orbit: orbit) {
+        
+      if case .success(let observation) = getSatelliteObservation(observer: observer, orbit: orbit) {
         let visible = observation.elevation > 0
-        var item = SatListItem(satellite: sat, visible: visible)
+        var item = SatelliteListItem(satellite: satellite, visible: visible)
         if observation.elevation > 0 {
-          item.los = getSatNextLos(observer: observer, orbit: orbit).date
+            item.los = getSatNextLos(observer: observer, orbit: orbit).julianDate
         } else {
-          let nextPass = getNextSatPass(observer: observer, orbit: orbit)
-          item.nextAos = nextPass.aos.date
-          item.nextLos = nextPass.los.date
+          let nextPass = getNextSatellitePass(observer: observer, orbit: orbit)
+            item.nextAos = nextPass.aos.julianDate
+            item.nextLos = nextPass.los.julianDate
           item.maxEl = nextPass.maxElevation.elevation.deg
         }
+        
+        // TODO: Add in settings view "minimal elevation", so that user can configure this value!
         if item.maxEl != nil && item.maxEl! < 0 {
         } else {
           result.append(item)
@@ -126,23 +119,23 @@ class SatListStore: NSObject, ObservableObject, CLLocationManagerDelegate {
       let toSend = result
       DispatchQueue.main.async {
         [toSend] in
-        self.sats = toSend
-        self.lastLoadedAt = Date.now
+        self.satellites = toSend
+        self.lastUpdateTime = Date.now
       }
     }
   }
 }
 
-struct SatListView : View {
-  @StateObject var store = SatListStore()
+struct SatellitesListView : View {
+  @StateObject var store = SatellitesListStore()
   @State private var searchText: String = ""
-  @EnvironmentObject private var rig: MyIc705
+  @EnvironmentObject private var rig: Icom705Rig
   
-  var items: [SatListItem] {
+  var items: [SatelliteListItem] {
     if searchText.isEmpty {
-      return store.sats
+      return store.satellites
     }
-    return store.sats.filter {
+    return store.satellites.filter {
       return $0.satellite.name.range(of:searchText, options: .caseInsensitive) != nil
     }
   }
@@ -210,7 +203,7 @@ struct SatListView : View {
       }
       .toolbar {
         ToolbarItem(placement: .primaryAction) {
-          NavigationLink (destination: SettingsView()) {
+            NavigationLink (destination: SettingsView(themeManager: ThemeManager())) {
             Image(systemName: "gearshape")
           }
         }

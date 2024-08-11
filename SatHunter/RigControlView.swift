@@ -9,22 +9,22 @@ class DopplerShiftModel: NSObject, ObservableObject, CLLocationManagerDelegate {
   @Published var transponderDownlinkShift: Int?
   @Published var transponderUplinkShift: Int?
   var transponder: Transponder?
-  private var orbit: SatOrbitElements?
+  private var orbit: SatelliteOrbitElements?
   var trackedSatTle: (String, String)? {
     didSet {
       if let tle = trackedSatTle {
-        orbit = SatOrbitElements(tle)
+        orbit = SatelliteOrbitElements(tle)
       } else {
         orbit = nil
       }
     }
   }
 
-  private var observer = SatObserver(
+  private var observer = SatelliteObserver(
     name: "user",
-    lat: 37.33481435508938,
-    lon: -122.00893980785605,
-    alt: 25
+    latitudeDegrees: 37.33481435508938,
+    longitudeDegrees: -122.00893980785605,
+    altitude: 25
   )
   private var locationManager: CLLocationManager?
   private var dispatchQueue: DispatchQueue = .init(label: "doppler_shift_model")
@@ -87,20 +87,20 @@ class DopplerShiftModel: NSObject, ObservableObject, CLLocationManagerDelegate {
       let userAlt = location.altitude
       let userLon = location.coordinate.longitude
       let userLat = location.coordinate.latitude
-      observer = SatObserver(
+      observer = SatelliteObserver(
         name: "user",
-        lat: userLat,
-        lon: userLon,
-        alt: userAlt
+        latitudeDegrees: userLat,
+        longitudeDegrees: userLon,
+        altitude: userAlt
       )
     }
   }
 
-  func setTrueFreq(_ f: FreqForDopplerCalculation) {
+  func setTrueFreq(_ f: FrequencyForDopplerCalculation) {
     var fValue: Int
     var setF: (DopplerShiftModel, Int) -> Void
     switch f {
-    case let .DownLink(f):
+    case let .DownLinkHz(f):
       fValue = f
       setF = {
         (m: DopplerShiftModel, value: Int) in
@@ -108,7 +108,7 @@ class DopplerShiftModel: NSObject, ObservableObject, CLLocationManagerDelegate {
             m.downlinkFreq = value
           }
       }
-    case let .UpLink(f):
+    case let .UpLinkHz(f):
       fValue = f
       setF = {
         (m: DopplerShiftModel, value: Int) in
@@ -122,7 +122,7 @@ class DopplerShiftModel: NSObject, ObservableObject, CLLocationManagerDelegate {
       setF(self, fValue)
       return
     }
-    guard case let .success(observation) = getSatObservation(observer: observer,
+    guard case let .success(observation) = getSatelliteObservation(observer: observer,
                                                              orbit: orbit)
     else {
       setF(self, fValue)
@@ -145,27 +145,27 @@ class DopplerShiftModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     var transponderUpShift: Int?
     var transponderDownShift: Int?
     if let orbit = orbit {
-      if case let .success(observation) = getSatObservation(observer: observer,
+      if case let .success(observation) = getSatelliteObservation(observer: observer,
                                                             orbit: orbit)
       {
         if observation.elevation > 0 {
           down = downlinkFreq + getSatDopplerShift(
             observation: observation,
-            freq: .DownLink(downlinkFreq)
+            freq: .DownLinkHz(downlinkFreq)
           )
           up = uplinkFreq + getSatDopplerShift(
             observation: observation,
-            freq: .UpLink(uplinkFreq)
+            freq: .UpLinkHz(uplinkFreq)
           )
           if let t = transponder {
             transponderDownShift = getSatDopplerShift(
               observation: observation,
-              freq: .DownLink(t.downlinkCenterFreq)
+              freq: .DownLinkHz(t.downlinkCenterFreq)
             )
             if let uplinkCenterFreq = t.uplinkCenterFreq {
               transponderUpShift = getSatDopplerShift(
                 observation: observation,
-                freq: .UpLink(uplinkCenterFreq)
+                freq: .UpLinkHz(uplinkCenterFreq)
               )
             }
           }
@@ -214,13 +214,13 @@ class RadioModel: ObservableObject {
     }
   }
 
-  var ctcss: ToneFreq = .NotSet {
+  var ctcss: ToneFrequency = .NotSet {
     didSet {
       configCtcss()
     }
   }
 
-  var rig: MyIc705?
+  var rig: Icom705Rig?
   var dopplerShiftModel: DopplerShiftModel?
   var transponder: Transponder?
   private var timer: Timer?
@@ -273,7 +273,7 @@ class RadioModel: ObservableObject {
     if rig.connectionState != .Connected {
       return
     }
-    if ctcss == .NotSet {
+      if ctcss == .NotSet {
       rig.selectVfo(false)
       rig.enableVfoARepeaterTone(false)
       rig.selectVfo(true)
@@ -320,7 +320,7 @@ class RadioModel: ObservableObject {
 
     guard let m = dopplerShiftModel else { return }
     // When not tracking, let the doppler model follow VFO A.
-    m.setTrueFreq(.DownLink(vfoAFreq))
+    m.setTrueFreq(.DownLinkHz(vfoAFreq))
     // If transponder is available, then let VFO B follow VFO A.
     // How it follows depends on the type of transponder:
     guard let transponder = transponder else {
@@ -335,7 +335,7 @@ class RadioModel: ObservableObject {
     let setVfoBFreq: (Int) -> Void = {
       f in
       self.rig?.setVfoBFreq(f)
-      m.setTrueFreq(.UpLink(f))
+      m.setTrueFreq(.UpLinkHz(f))
     }
     // downlink freq is not a range.
     if transponder.downlinkFreqUpper == 0 {
@@ -451,12 +451,12 @@ struct RigControlView: View {
   var trackedSat: Satellite
   @State private var selectedVfoAMode: Mode = .LSB
   @State private var selectedVfoBMode: Mode = .LSB
-  @EnvironmentObject private var rig: MyIc705
+  @EnvironmentObject private var rig: Icom705Rig
   @StateObject var dopplerShiftModel = DopplerShiftModel()
   @StateObject var radioModel = RadioModel()
   @State private var radioIsTracking: Bool = false
   @State private var transponderIdx: Int = -1
-  @State private var selectedCtcss: ToneFreq = .NotSet
+  @State private var selectedCtcss: ToneFrequency = .NotSet
 
   var body: some View {
     VStack {
@@ -469,11 +469,11 @@ struct RigControlView: View {
           Spacer()
         }
       }
-      SatFreqView(
-        downlinkFreqAtSat: $dopplerShiftModel.downlinkFreq,
-        uplinkFreqAtSat: $dopplerShiftModel.uplinkFreq,
-        downlinkFreqAtGround: $dopplerShiftModel.actualDownlinkFreq,
-        uplinkFreqAtGround: $dopplerShiftModel.actualUplinkFreq
+      SatelliteFrequencyView(
+        satelliteDownlinkFrequency: $dopplerShiftModel.downlinkFreq,
+        satelliteUplinkFrequency: $dopplerShiftModel.uplinkFreq,
+        groundDownlinkFrequency: $dopplerShiftModel.actualDownlinkFreq,
+        groundUplinkFrequency: $dopplerShiftModel.actualUplinkFreq
       )
       TransponderView(
         transponderIdx: $transponderIdx,
@@ -558,7 +558,7 @@ struct RigControlView: View {
         }
         Spacer()
         Picker(selection: $selectedCtcss, label: Text("CTCSS")) {
-          ForEach(ToneFreq.allCases) {
+            ForEach(ToneFrequency.allCases) {
             f in
             Text(f.description).tag(f)
           }
@@ -604,7 +604,7 @@ struct RigControlView: View {
       selectedVfoBMode = transponder.uplinkMode.libPredictMode
     } else {
       dopplerShiftModel.uplinkFreq = 0
-      dopplerShiftModel.setTrueFreq(.DownLink(radioModel.vfoAFreq))
+      dopplerShiftModel.setTrueFreq(.DownLinkHz(radioModel.vfoAFreq))
     }
     dopplerShiftModel.blockedRefresh()
     radioModel.setFreqFromDopplerModel()
