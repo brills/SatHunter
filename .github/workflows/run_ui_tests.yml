@@ -10,5 +10,5 @@ jobs:
     - name: Select Xcode
       run: sudo xcode-select -switch /Applications/Xcode_15.4.app && /usr/bin/xcodebuild -version
     - name: Run tests
-      run: xcodebuild test -scheme SatHunter -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5
+      run: xcodebuild test -scheme SatHunter -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5'
 
