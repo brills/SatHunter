@@ -6,7 +6,7 @@ jobs:
   run_tests:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - name: Install protobuf
       run: brew install protobuf swift-protobuf
     - name: Select Xcode
