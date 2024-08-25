@@ -7,6 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		631CC5D82C67B720006D2B86 /* Mode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631CC5D72C67B720006D2B86 /* Mode.swift */; };
+		631CC5DA2C67B911006D2B86 /* ToneFrequency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631CC5D92C67B911006D2B86 /* ToneFrequency.swift */; };
+		631CC5DC2C67BA3A006D2B86 /* Conversions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631CC5DB2C67BA3A006D2B86 /* Conversions.swift */; };
+		631CC5E12C67BF24006D2B86 /* RigError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631CC5E02C67BF24006D2B86 /* RigError.swift */; };
+		631CC5E32C67BF59006D2B86 /* ConnectionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631CC5E22C67BF59006D2B86 /* ConnectionState.swift */; };
+		631CC5E72C67C1BA006D2B86 /* IC705.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631CC5E62C67C1BA006D2B86 /* IC705.swift */; };
+		631CC5EA2C67C280006D2B86 /* IC705BluetoothDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631CC5E92C67C280006D2B86 /* IC705BluetoothDelegate.swift */; };
+		631CC5EC2C67C334006D2B86 /* RigState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631CC5EB2C67C334006D2B86 /* RigState.swift */; };
+		631CC5EE2C67CB97006D2B86 /* ByteUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631CC5ED2C67CB97006D2B86 /* ByteUtilities.swift */; };
+		632A21B52C68CE0800ED4280 /* SatelliteOrbitElements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632A21B42C68CE0800ED4280 /* SatelliteOrbitElements.swift */; };
+		632A21B72C68CE4700ED4280 /* SatelliteObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632A21B62C68CE4700ED4280 /* SatelliteObserver.swift */; };
+		632A21B92C68CE8700ED4280 /* SatellitePass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632A21B82C68CE8700ED4280 /* SatellitePass.swift */; };
+		632A21BB2C68D5A400ED4280 /* SatelliteListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632A21BA2C68D5A400ED4280 /* SatelliteListItem.swift */; };
+		632A21BD2C68EA5C00ED4280 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632A21BC2C68EA5C00ED4280 /* AppTheme.swift */; };
 		D10F8E132A34380D008D0D2F /* SatFreqView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10F8E122A34380D008D0D2F /* SatFreqView.swift */; };
 		D12952402A28004D00334302 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = D129523F2A28004D00334302 /* SwiftProtobuf */; };
 		D12952422A28006800334302 /* sat_info.proto in Sources */ = {isa = PBXBuildFile; fileRef = D12952412A28006800334302 /* sat_info.proto */; };
@@ -34,7 +48,7 @@
 		D1A738912A24235B002832A1 /* TrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738902A24235B002832A1 /* TrackingView.swift */; };
 		D1A738932A24235D002832A1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D1A738922A24235D002832A1 /* Assets.xcassets */; };
 		D1A738962A24235D002832A1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D1A738952A24235D002832A1 /* Preview Assets.xcassets */; };
-		D1A738B62A242398002832A1 /* LibPredict.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738852A230F81002832A1 /* LibPredict.swift */; };
+		D1A738B62A242398002832A1 /* SatellitePredictions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738852A230F81002832A1 /* SatellitePredictions.swift */; };
 		D1A738B72A242434002832A1 /* libpredict.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D1403E342A2303ED000E873B /* libpredict.framework */; platformFilter = ios; };
 		D1A738B82A242434002832A1 /* libpredict.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D1403E342A2303ED000E873B /* libpredict.framework */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D1A738BE2A250C06002832A1 /* SatListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A738BD2A250C06002832A1 /* SatListView.swift */; };
@@ -93,6 +107,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		631CC5D72C67B720006D2B86 /* Mode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mode.swift; sourceTree = "<group>"; };
+		631CC5D92C67B911006D2B86 /* ToneFrequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToneFrequency.swift; sourceTree = "<group>"; };
+		631CC5DB2C67BA3A006D2B86 /* Conversions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conversions.swift; sourceTree = "<group>"; };
+		631CC5E02C67BF24006D2B86 /* RigError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RigError.swift; sourceTree = "<group>"; };
+		631CC5E22C67BF59006D2B86 /* ConnectionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionState.swift; sourceTree = "<group>"; };
+		631CC5E62C67C1BA006D2B86 /* IC705.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IC705.swift; sourceTree = "<group>"; };
+		631CC5E92C67C280006D2B86 /* IC705BluetoothDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IC705BluetoothDelegate.swift; sourceTree = "<group>"; };
+		631CC5EB2C67C334006D2B86 /* RigState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RigState.swift; sourceTree = "<group>"; };
+		631CC5ED2C67CB97006D2B86 /* ByteUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ByteUtilities.swift; sourceTree = "<group>"; };
+		632A21B42C68CE0800ED4280 /* SatelliteOrbitElements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatelliteOrbitElements.swift; sourceTree = "<group>"; };
+		632A21B62C68CE4700ED4280 /* SatelliteObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatelliteObserver.swift; sourceTree = "<group>"; };
+		632A21B82C68CE8700ED4280 /* SatellitePass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatellitePass.swift; sourceTree = "<group>"; };
+		632A21BA2C68D5A400ED4280 /* SatelliteListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatelliteListItem.swift; sourceTree = "<group>"; };
+		632A21BC2C68EA5C00ED4280 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		D10F8E122A34380D008D0D2F /* SatFreqView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatFreqView.swift; sourceTree = "<group>"; };
 		D12952412A28006800334302 /* sat_info.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = sat_info.proto; sourceTree = "<group>"; };
 		D12952482A2806E600334302 /* SatInfoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatInfoManager.swift; sourceTree = "<group>"; };
@@ -118,7 +146,7 @@
 		D1A738722A230C69002832A1 /* sun.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sun.h; sourceTree = "<group>"; };
 		D1A738732A230C69002832A1 /* sdp4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sdp4.h; sourceTree = "<group>"; };
 		D1A738742A230C69002832A1 /* sgp4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sgp4.h; sourceTree = "<group>"; };
-		D1A738852A230F81002832A1 /* LibPredict.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibPredict.swift; sourceTree = "<group>"; };
+		D1A738852A230F81002832A1 /* SatellitePredictions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatellitePredictions.swift; sourceTree = "<group>"; };
 		D1A7388C2A24235B002832A1 /* SatHunter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SatHunter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1A7388E2A24235B002832A1 /* SatHunterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatHunterApp.swift; sourceTree = "<group>"; };
 		D1A738902A24235B002832A1 /* TrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingView.swift; sourceTree = "<group>"; };
@@ -159,6 +187,56 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		631CC5D62C67B708006D2B86 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				D1A738C92A25A485002832A1 /* Rig.swift */,
+				631CC5EB2C67C334006D2B86 /* RigState.swift */,
+				631CC5E02C67BF24006D2B86 /* RigError.swift */,
+				631CC5E22C67BF59006D2B86 /* ConnectionState.swift */,
+				631CC5D72C67B720006D2B86 /* Mode.swift */,
+				631CC5D92C67B911006D2B86 /* ToneFrequency.swift */,
+				632A21BA2C68D5A400ED4280 /* SatelliteListItem.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		631CC5DD2C67BC28006D2B86 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				631CC5DB2C67BA3A006D2B86 /* Conversions.swift */,
+				631CC5ED2C67CB97006D2B86 /* ByteUtilities.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		631CC5DE2C67BC67006D2B86 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		631CC5E82C67C262006D2B86 /* Icom-705 */ = {
+			isa = PBXGroup;
+			children = (
+				631CC5E62C67C1BA006D2B86 /* IC705.swift */,
+				631CC5E92C67C280006D2B86 /* IC705BluetoothDelegate.swift */,
+			);
+			path = "Icom-705";
+			sourceTree = "<group>";
+		};
+		631CC5EF2C67D07B006D2B86 /* Satellite */ = {
+			isa = PBXGroup;
+			children = (
+				D1A738852A230F81002832A1 /* SatellitePredictions.swift */,
+				632A21B42C68CE0800ED4280 /* SatelliteOrbitElements.swift */,
+				632A21B62C68CE4700ED4280 /* SatelliteObserver.swift */,
+				632A21B82C68CE8700ED4280 /* SatellitePass.swift */,
+			);
+			path = Satellite;
+			sourceTree = "<group>";
+		};
 		D12952472A2803FD00334302 /* Protos */ = {
 			isa = PBXGroup;
 			children = (
@@ -237,11 +315,14 @@
 		D1A7388D2A24235B002832A1 /* SatHunter */ = {
 			isa = PBXGroup;
 			children = (
+				631CC5EF2C67D07B006D2B86 /* Satellite */,
+				631CC5E82C67C262006D2B86 /* Icom-705 */,
+				631CC5DE2C67BC67006D2B86 /* Views */,
+				631CC5DD2C67BC28006D2B86 /* Utilities */,
+				631CC5D62C67B708006D2B86 /* Models */,
 				D12952472A2803FD00334302 /* Protos */,
-				D1A738C92A25A485002832A1 /* Rig.swift */,
 				D1A738BC2A2475AD002832A1 /* Info.plist */,
 				D10F8E122A34380D008D0D2F /* SatFreqView.swift */,
-				D1A738852A230F81002832A1 /* LibPredict.swift */,
 				D1A7388E2A24235B002832A1 /* SatHunterApp.swift */,
 				D1A738902A24235B002832A1 /* TrackingView.swift */,
 				D13429B72A302A2B00184085 /* SkyView.swift */,
@@ -254,6 +335,7 @@
 				D1F547902A29B15700AED698 /* SettingsView.swift */,
 				D19BE3452A302C6800DC47D1 /* SatViewModel.swift */,
 				D19BE3472A302CD400DC47D1 /* SatInfoView.swift */,
+				632A21BC2C68EA5C00ED4280 /* AppTheme.swift */,
 			);
 			path = SatHunter;
 			sourceTree = "<group>";
@@ -446,16 +528,30 @@
 			files = (
 				D1A738912A24235B002832A1 /* TrackingView.swift in Sources */,
 				D12952422A28006800334302 /* sat_info.proto in Sources */,
+				632A21B92C68CE8700ED4280 /* SatellitePass.swift in Sources */,
+				632A21BB2C68D5A400ED4280 /* SatelliteListItem.swift in Sources */,
+				632A21B72C68CE4700ED4280 /* SatelliteObserver.swift in Sources */,
 				D19BE3482A302CD400DC47D1 /* SatInfoView.swift in Sources */,
-				D1A738B62A242398002832A1 /* LibPredict.swift in Sources */,
+				D1A738B62A242398002832A1 /* SatellitePredictions.swift in Sources */,
 				D1A738C62A25441D002832A1 /* RigControlView.swift in Sources */,
 				D1A7388F2A24235B002832A1 /* SatHunterApp.swift in Sources */,
+				632A21B52C68CE0800ED4280 /* SatelliteOrbitElements.swift in Sources */,
+				631CC5EC2C67C334006D2B86 /* RigState.swift in Sources */,
+				631CC5DC2C67BA3A006D2B86 /* Conversions.swift in Sources */,
 				D1F547912A29B15700AED698 /* SettingsView.swift in Sources */,
 				D12952492A2806E600334302 /* SatInfoManager.swift in Sources */,
+				631CC5E12C67BF24006D2B86 /* RigError.swift in Sources */,
+				631CC5E32C67BF59006D2B86 /* ConnectionState.swift in Sources */,
+				631CC5EA2C67C280006D2B86 /* IC705BluetoothDelegate.swift in Sources */,
 				D1A738C82A2550B6002832A1 /* SatView.swift in Sources */,
 				D10F8E132A34380D008D0D2F /* SatFreqView.swift in Sources */,
+				631CC5E72C67C1BA006D2B86 /* IC705.swift in Sources */,
 				D1A738CA2A25A485002832A1 /* Rig.swift in Sources */,
+				632A21BD2C68EA5C00ED4280 /* AppTheme.swift in Sources */,
+				631CC5D82C67B720006D2B86 /* Mode.swift in Sources */,
 				D19BE3462A302C6800DC47D1 /* SatViewModel.swift in Sources */,
+				631CC5EE2C67CB97006D2B86 /* ByteUtilities.swift in Sources */,
+				631CC5DA2C67B911006D2B86 /* ToneFrequency.swift in Sources */,
 				D13429B82A302A2B00184085 /* SkyView.swift in Sources */,
 				D1A738BE2A250C06002832A1 /* SatListView.swift in Sources */,
 			);

@@ -7,55 +7,56 @@
 
 import SwiftUI
 
-struct SatFreqView: View {
-  @Binding var downlinkFreqAtSat: Int
-  @Binding var uplinkFreqAtSat: Int
-  @Binding var downlinkFreqAtGround: Int?
-  @Binding var uplinkFreqAtGround: Int?
+struct SatelliteFrequencyView: View {
+  @Binding var satelliteDownlinkFrequency: Int
+  @Binding var satelliteUplinkFrequency: Int
+  @Binding var groundDownlinkFrequency: Int?
+  @Binding var groundUplinkFrequency: Int?
+    
   var body: some View {
     VStack{
       HStack {
         Image(systemName: "arrow.down")
-        Text(downlinkFreqAtSat.asFormattedFreq)
+        Text(satelliteDownlinkFrequency.asFormattedFreq)
         Spacer()
         Divider()
         Image(systemName: "dot.radiowaves.forward")
-        Text(getDownlinkFreqAtGround())
+        Text(getGroundDownlinkFrequency())
           .frame(maxHeight: .infinity)
         Spacer()
       }
       HStack {
         Image(systemName: "arrow.up")
-        Text(uplinkFreqAtSat.asFormattedFreq)
+        Text(satelliteUplinkFrequency.asFormattedFreq)
         Spacer()
         Divider()
         Image(systemName: "dot.radiowaves.forward")
-        Text(getUplinkFreqAtGround())
+        Text(getGroundUplinkFrequency())
           .frame(maxHeight: .infinity)
         Spacer()
       }
     }.font(.body.monospaced())
   }
 
-  private func getDownlinkFreqAtGround() -> String {
-    if let f = downlinkFreqAtGround {
+  private func getGroundDownlinkFrequency() -> String {
+    if let f = groundDownlinkFrequency {
       return f.asFormattedFreq
     }
     return "N/A"
   }
 
-  private func getUplinkFreqAtGround() -> String {
-    if let f = uplinkFreqAtGround {
+  private func getGroundUplinkFrequency() -> String {
+    if let f = groundUplinkFrequency {
       return f.asFormattedFreq
     }
     return "N/A"
   }
 }
 
-struct SatFreqView_Previews: PreviewProvider {
+struct SatelliteFrequencyView_Previews: PreviewProvider {
     static var previews: some View {
-        SatFreqView(
-          downlinkFreqAtSat: .constant(144000000), uplinkFreqAtSat: .constant(440000000), downlinkFreqAtGround: .constant(144005000), uplinkFreqAtGround: .constant(440010000)
+        SatelliteFrequencyView(
+            satelliteDownlinkFrequency: .constant(144000000), satelliteUplinkFrequency: .constant(440000000), groundDownlinkFrequency: .constant(144005000), groundUplinkFrequency: .constant(440010000)
         )
     }
 }

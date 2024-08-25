@@ -13,7 +13,7 @@ import OSLog
 fileprivate let logger = Logger()
 
 class SatViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
-  var trackedSat: SatOrbitElements? = nil {
+  var trackedSat: SatelliteOrbitElements? = nil {
     didSet {
       self.refresh()
     }
@@ -35,9 +35,9 @@ class SatViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
   @Published var currentEl: Double? = nil
   
   @Published var userHeading: Double = 0
-  @Published var userLat: Double = 0
-  @Published var userLon: Double = 0
-  @Published var userAlt: Double = 0
+  @Published var userLatitude: Double = 0
+  @Published var userLongitude: Double = 0
+  @Published var userAltitude: Double = 0
   @Published var userGridSquare: String = ""
   @Published var passTrack: [(Double, Double)] = []
   
@@ -45,7 +45,8 @@ class SatViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
   private var locationManager: CLLocationManager? = nil
   // APPLE PARK (:D)
   // 37.33481435508938, -122.00893980785605
-  private var observer = SatObserver(name: "user", lat: 37.33481435508938, lon:-122.00893980785605, alt: 25)
+  private var observer = SatelliteObserver(name: "user", latitudeDegrees: 37.33481435508938, longitudeDegrees:-122.00893980785605, altitude: 25)
+    
   override init() {
     super.init()
     timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: {_ in self.refresh()})
@@ -66,29 +67,29 @@ class SatViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
   
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
     if let location = locations.last {
-      userAlt = location.altitude
-      userLon = location.coordinate.longitude
-      userLat = location.coordinate.latitude
-      observer = SatObserver(name: "user", lat: userLat, lon: userLon, alt: userAlt)
-      userGridSquare = latLonToGridSquare(lat: userLat, lon: userLon)
+      userAltitude = location.altitude
+      userLongitude = location.coordinate.longitude
+      userLatitude = location.coordinate.latitude
+      observer = SatelliteObserver(name: "user", latitudeDegrees: userLatitude, longitudeDegrees: userLongitude, altitude: userAltitude)
+      userGridSquare = latLonToGridSquare(latitude: userLatitude, longitude: userLongitude)
     }
   }
 
   func refresh() {
     if let trackedSat = trackedSat {
-      if case let .success(observation) = getSatObservation(observer: observer,
+      if case let .success(observation) = getSatelliteObservation(observer: observer,
                                                             orbit: trackedSat)
       {
         if observation.elevation > 0 {
           currentAz = observation.azimuth.deg
           currentEl = observation.elevation.deg
           let los = getSatNextLos(observer: observer, orbit: trackedSat)
-          currentLos = los.date
+            currentLos = los.julianDate
         } else {
-          let nextPass = getNextSatPass(observer: observer, orbit: trackedSat)
-          nextAos = nextPass.aos.date
-          nextLos = nextPass.los.date
-          maxEl = nextPass.maxElevation.elevation.deg
+          let nextPass = getNextSatellitePass(observer: observer, orbit: trackedSat)
+            nextAos = nextPass.aos.julianDate
+            nextLos = nextPass.los.julianDate
+            maxEl = nextPass.maxElevation.elevation.deg
         }
         let newVisible = observation.elevation > 0
         if visible == nil || visible! != newVisible {
@@ -104,7 +105,7 @@ class SatViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     let endTime = isVisible ? currentLos! : nextLos!
     var newPassTrack: [(Double, Double)] = []
     for t in stride(from: startTime, through: endTime, by: 10) {
-      if case let .success(observation) = getSatObservation(observer: observer, orbit: trackedSat!, time: t) {
+      if case let .success(observation) = getSatelliteObservation(observer: observer, orbit: trackedSat!, time: t) {
         newPassTrack.append((observation.azimuth.deg, observation.elevation.deg))
       }
     }
@@ -119,9 +120,9 @@ func azElToXy(az: Double, el: Double) -> (Double, Double) {
   return (r * sin(az.rad), r * cos(az.rad))
 }
 
-func latLonToGridSquare(lat: Double, lon: Double) -> String {
-  var lon = lon + 180
-  var lat = lat + 90
+func latLonToGridSquare(latitude: Double, longitude: Double) -> String {
+  var lon = longitude + 180
+  var lat = latitude + 90
   var result = ""
   var lonBand = floor(lon / 20)
   var latBand = floor(lat / 10)

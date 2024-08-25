@@ -14,11 +14,13 @@ struct SatView: View {
         los: $model.currentLos,
         nextAos: $model.nextAos,
         nextLos: $model.nextLos,
+        elevation: $model.currentEl,
+        azimuth: $model.currentAz,
         maxEl: $model.maxEl,
         userGrid: $model.userGridSquare
       )
     }.onAppear {
-      model.trackedSat = SatOrbitElements(trackedSat.tleTuple)
+      model.trackedSat = SatelliteOrbitElements(trackedSat.tleTuple)
     }
   }
 }
